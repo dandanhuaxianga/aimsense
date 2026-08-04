@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AimSense 灵敏度工坊 · CS2 / Valorant</title>
+<style>
+:root{
+  --ink:#0f1d26;
+  --ink-2:#162b36;
+  --paper:#f3f8f6;
+  --panel:#ffffff;
+  --line:#d9e6e2;
+  --teal:#0fb9a5;
+  --teal-dark:#0b8f80;
+  --coral:#ff6b4a;
+  --gold:#f2b84b;
+  --muted:#5f7480;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:"Segoe UI","Microsoft YaHei","PingFang SC",system-ui,sans-serif;
+  background:var(--paper);
+  color:var(--ink);
+  line-height:1.5;
+}
+button,input,select{font:inherit}
+button{cursor:pointer}
+
+.hero{
+  background:var(--ink);
+  background-image:
+    linear-gradient(rgba(15,185,165,.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15,185,165,.07) 1px, transparent 1px);
+  background-size:34px 34px;
+  color:#fff;
+  border-bottom:3px solid var(--teal);
+}
+.hero-inner{max-width:1080px;margin:0 auto;padding:36px 20px 46px}
+.kicker{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:13px;font-weight:700;color:#9ee9dd;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:8px;padding:7px 12px;margin-bottom:16px;
+  background:rgba(15,185,165,.08);
+}
+.kicker-dot{width:8px;height:8px;border-radius:50%;background:var(--coral)}
+.hero h1{font-size:40px;line-height:1.15;letter-spacing:0;font-weight:800}
+.hero h1 em{font-style:normal;color:var(--teal)}
+.hero-sub{margin-top:10px;font-size:16px;color:#9db8c2}
+
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px 56px}
+.config{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:8px;
+  margin-top:-20px;
+  padding:18px 20px;
+  box-shadow:0 8px 24px rgba(15,35,45,.06);
+}
+.config-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;align-items:end}
+.field{display:flex;flex-direction:column;gap:6px;grid-column:span 2;font-size:13px;font-weight:700;color:var(--muted)}
+.field-hint{font-size:12px;font-weight:600;color:var(--teal-dark);min-height:16px}
+.field select,.field input{
+  width:100%;height:42px;padding:0 12px;
+  border:1px solid var(--line);border-radius:8px;
+  background:#fff;color:var(--ink);font-weight:600;font-size:14px;
+  outline:none;transition:border-color .15s, box-shadow .15s;
+}
+.field select:focus,.field input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(15,185,165,.14)}
+.config-actions{grid-column:span 2;display:flex;flex-direction:column;gap:6px}
+.config-hint{font-size:12px;color:var(--muted);font-weight:500}
+
+.btn{
+  border:1px solid transparent;border-radius:8px;
+  font-weight:700;font-size:14px;padding:12px 18px;
+  transition:transform .12s, box-shadow .15s, background .15s;
+}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--teal);color:#fff;box-shadow:0 6px 14px rgba(15,185,165,.24)}
+.btn-primary:hover{background:var(--teal-dark)}
+.btn-start{background:var(--coral);color:#fff;padding:14px 30px;font-size:16px;box-shadow:0 6px 14px rgba(255,107,74,.24)}
+.btn-start:hover{background:#f2542f}
+
+.lab{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:18px;
+  margin-top:22px;
+}
+.lab-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.stepper{display:flex;gap:10px;flex-wrap:wrap}
+.step{
+  display:flex;align-items:center;gap:8px;
+  background:var(--paper);border:1px solid var(--line);border-radius:8px;
+  padding:9px 14px;font-size:13px;font-weight:700;color:var(--muted);
+}
+.step .step-num{
+  width:22px;height:22px;border-radius:50%;flex:none;
+  background:#d7e5e1;color:#40616d;
+  display:grid;place-items:center;font-size:12px;
+}
+.step.active{
+  background:#fff;border-color:var(--teal);color:var(--ink);
+  box-shadow:0 0 0 3px rgba(15,185,165,.12);
+}
+.step.active .step-num{background:var(--teal);color:#fff}
+.step.done{border-color:var(--teal);color:var(--teal-dark)}
+.step.done .step-num{background:var(--teal);color:#fff}
+.lab-meta h2{font-size:20px;letter-spacing:0}
+.lab-meta p{font-size:13px;color:var(--muted);margin-top:4px;max-width:520px}
+
+.stage{
+  position:relative;
+  height:520px;
+  max-height:62vh;
+  min-height:360px;
+  background-color:#0e1c25;
+  background-image:
+    linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+  background-size:44px 44px;
+  border-radius:8px;
+  overflow:hidden;
+  cursor:none;
+}
+.target{
+  position:absolute;left:0;top:0;
+  width:60px;height:60px;
+  border-radius:50%;
+  background:rgba(255,107,74,.16);
+  border:3px solid var(--coral);
+  transform:translate(-50%,-50%);
+  pointer-events:none;z-index:3;
+  box-shadow:0 0 22px rgba(255,107,74,.22);
+}
+.target::before{
+  content:"";position:absolute;left:50%;top:50%;
+  width:9px;height:9px;border-radius:50%;background:#fff;
+  transform:translate(-50%,-50%);
+  box-shadow:0 0 0 3px rgba(255,107,74,.35);
+}
+.target::after{
+  content:"";position:absolute;inset:-10px;border-radius:50%;
+  border:2px solid rgba(255,107,74,.26);
+}
+.target.pop::before{animation:pop .22s ease-out}
+@keyframes pop{
+  0%{transform:translate(-50%,-50%) scale(2.4);opacity:.35}
+  100%{transform:translate(-50%,-50%) scale(1);opacity:1}
+}
+.target.hidden{display:none}
+
+.center-zone{
+  position:absolute;left:50%;top:50%;
+  width:88px;height:88px;border-radius:50%;
+  transform:translate(-50%,-50%);
+  border:3px dashed #7cf7e4;
+  background:rgba(124,247,228,.08);
+  color:#bffbf0;font-size:13px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  pointer-events:none;z-index:4;text-align:center;
+  box-shadow:0 0 24px rgba(124,247,228,.18);
+}
+.center-zone.hidden{display:none}
+
+.crosshair{
+  position:absolute;left:0;top:0;width:0;height:0;
+  opacity:0;pointer-events:none;z-index:6;
+  transform:translate(-50%,-50%);
+  transition:opacity .12s;
+}
+.crosshair .ch{position:absolute;background:#7cf7e4;box-shadow:0 0 0 1px rgba(0,0,0,.55)}
+.crosshair .up{left:-1px;top:-14px;width:2px;height:12px}
+.crosshair .down{left:-1px;top:2px;width:2px;height:12px}
+.crosshair .left{top:-1px;left:-14px;width:12px;height:2px}
+.crosshair .right{top:-1px;left:2px;width:12px;height:2px}
+.crosshair::after{
+  content:"";position:absolute;left:-3px;top:-3px;
+  width:6px;height:6px;border-radius:50%;
+  background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.6);
+}
+
+.stage-overlay{
+  position:absolute;inset:0;z-index:8;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  background:rgba(10,22,29,.58);color:#fff;text-align:center;padding:20px;
+}
+.stage-overlay.hidden{display:none}
+.idle strong{font-size:28px;letter-spacing:0}
+.idle span{color:#bcd4cf;font-size:14px}
+.countdown{font-size:92px;font-weight:800;color:#7cf7e4;background:rgba(10,22,29,.72)}
+.countdown.go{color:var(--gold);font-size:62px}
+.paused{font-size:18px;font-weight:700;color:var(--gold);background:rgba(10,22,29,.76)}
+
+.hud{display:grid;grid-template-columns:128px 1fr;gap:12px;align-items:center;padding:12px 2px 6px}
+.hud-time{display:flex;align-items:baseline;gap:6px}
+.hud-time b{font-size:36px;font-family:Consolas,"Courier New",monospace;color:var(--ink)}
+.hud-time span{font-size:13px;color:var(--muted);font-weight:700}
+.hud-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.metric{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-height:64px}
+.metric-label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+.metric b{font-size:18px;font-family:Consolas,"Courier New",monospace}
+.hud-bar{grid-column:1 / -1;height:8px;background:#e4eeeb;border-radius:99px;overflow:hidden}
+.hud-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--gold));transition:width .1s linear}
+.lab-actions{display:flex;flex-direction:column;align-items:center;gap:8px;justify-content:center;margin-top:8px}
+.calib-hint{font-size:13px;color:var(--muted);text-align:center}
+
+.results{
+  margin-top:22px;background:var(--panel);
+  border:1px solid var(--line);border-radius:8px;padding:22px;
+}
+.results.hidden{display:none}
+.results-head{
+  display:grid;grid-template-columns:auto 1fr 2fr;gap:18px;align-items:center;
+  padding-bottom:18px;border-bottom:1px dashed var(--line);
+}
+.grade-box{display:flex;flex-direction:column;align-items:center;justify-content:center;width:104px;height:104px;border-radius:8px;background:var(--ink);color:#fff}
+.grade-label{font-size:12px;color:#8faab5;font-weight:700}
+.grade-box b{font-size:52px;line-height:1;color:var(--coral)}
+.score-box b{font-size:32px;line-height:1}
+.score-box .grade-label{color:var(--muted)}
+.score-bar{width:100%;max-width:300px;height:8px;background:#e4eeeb;border-radius:99px;overflow:hidden;margin-top:8px}
+.score-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--gold));transition:width .6s ease}
+.score-note{font-size:13px;color:var(--muted)}
+#familiarityNote{grid-column:2 / -1;margin-top:4px}
+
+.sens-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+.sens-panel{border:2px solid var(--line);border-radius:8px;padding:18px;background:var(--paper)}
+.sens-panel.active{border-color:var(--teal);box-shadow:0 0 0 3px rgba(15,185,165,.12)}
+.sens-game{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px;color:var(--muted);margin-bottom:10px}
+.game-tag{background:var(--ink);color:#fff;border-radius:6px;padding:3px 8px;font-size:12px}
+.game-tag.val{background:var(--coral)}
+.sens-value{font-size:16px;font-weight:700;color:var(--ink)}
+.sens-value b{font-size:42px;font-family:Consolas,"Courier New",monospace;font-weight:800;margin-left:4px}
+.sens-sub{color:var(--muted);font-size:13px;margin:8px 0 12px}
+.sens-sub b{color:var(--ink)}
+.sens-note{font-size:12px;color:var(--teal-dark);background:rgba(15,185,165,.09);border-radius:6px;padding:9px 11px;line-height:1.6}
+
+.data-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.data-item{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.data-item span{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+.data-item b{font-size:20px;font-family:Consolas,"Courier New",monospace}
+.data-bar{height:6px;background:#e4eeeb;border-radius:99px;overflow:hidden;margin-top:8px}
+.data-bar i{display:block;height:100%;background:var(--teal)}
+
+.advice{margin-top:18px;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:16px 18px}
+.advice h3{font-size:18px;margin-bottom:12px}
+#suggestions{list-style:none;display:flex;flex-direction:column;gap:10px}
+#suggestions li{display:flex;gap:12px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+#suggestions li span{
+  width:26px;height:26px;flex:none;border-radius:50%;
+  display:grid;place-items:center;color:#fff;font-weight:800;font-size:13px;
+}
+#suggestions li p{font-size:14px;line-height:1.7}
+.tone-high span{background:var(--coral)}
+.tone-mid span{background:var(--gold);color:#3a2c00}
+.tone-good span{background:var(--teal)}
+.advice-foot{margin-top:12px;font-size:12px;color:var(--muted);line-height:1.7}
+
+.setup{
+  margin-top:22px;background:var(--panel);
+  border:1px solid var(--line);border-radius:8px;padding:18px 20px;
+}
+.setup-head{display:flex;align-items:baseline;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.setup-head h3{font-size:18px}
+.setup-head p{font-size:13px;color:var(--muted)}
+.setup-list{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:10px 22px}
+.setup-list li{position:relative;padding-left:20px;font-size:14px;color:#243b45;line-height:1.7}
+.setup-list li::before{
+  content:"";position:absolute;left:0;top:9px;
+  width:8px;height:8px;border-radius:2px;background:var(--teal);
+}
+
+.footer{
+  text-align:center;color:var(--muted);font-size:12px;
+  padding:20px;border-top:1px solid var(--line);background:#fff;
+}
+
+@media (max-width:860px){
+  .field{grid-column:span 3}
+  .config-actions{grid-column:span 3}
+  .hud{grid-template-columns:1fr}
+  .hud-metrics{grid-template-columns:repeat(2,1fr)}
+  .results-head{grid-template-columns:1fr}
+  .sens-grid{grid-template-columns:1fr}
+  .data-strip{grid-template-columns:repeat(2,1fr)}
+  .setup-list{grid-template-columns:1fr}
+  .stage{height:430px}
+}
+@media (max-width:600px){
+  .hero h1{font-size:30px}
+  .hero-sub{font-size:14px}
+  .field{grid-column:span 6}
+  .config-actions{grid-column:span 6}
+  .lab-head{flex-direction:column}
+  .stepper{width:100%}
+  .step{flex:1;justify-content:center}
+  .stage{height:380px}
+  .data-strip{grid-template-columns:1fr 1fr}
+  .countdown{font-size:72px}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="kicker"><span class="kicker-dot"></span>CS2 · VALORANT 专属校准</div>
+    <h1>AimSense <em>灵敏度工坊</em></h1>
+    <p class="hero-sub">三项鼠标试炼 · 一套专属灵敏度 · 每次 10 秒</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="config">
+    <div class="config-grid">
+      <label class="field">目标游戏
+        <select id="game">
+          <option value="cs2">CS2（反恐精英2）</option>
+          <option value="valorant">Valorant（瓦罗兰特）</option>
+        </select>
+      </label>
+      <label class="field">鼠标 DPI
+      <label class="field">当前游戏内灵敏度
+        <input id="gameSens" type="number" min="0.01" max="100" step="0.01" value="1.0" placeholder="1.0">
+        <span class="field-hint" id="currentEdpi">当前 eDPI ≈ --</span>
+      </label>
+      <label class="field">鼠标 DPI
+        <select id="dpi">
+          <option value="400">400 DPI</option>
+          <option value="800" selected>800 DPI</option>
+          <option value="1200">1200 DPI</option>
+          <option value="1600">1600 DPI</option>
+        </select>
+      </label>
+      <label class="field">瞄准习惯
+        <select id="style">
+          <option value="arm">手臂流（大范围移动）</option>
+          <option value="mixed" selected>混合流（平衡）</option>
+          <option value="wrist">手腕流（小幅移动）</option>
+        </select>
+      </label>
+      <label class="field">鼠标垫尺寸
+        <select id="pad">
+          <option value="small">小号（&lt;35cm）</option>
+          <option value="medium" selected>中号（35~45cm）</option>
+          <option value="large">大号（&gt;45cm）</option>
+        </select>
+      </label>
+      <label class="field">目标大小
+        <select id="size">
+          <option value="small">小目标（&lt;40px）</option>
+          <option value="medium" selected>中目标（40~65px）</option>
+          <option value="large">大目标（&gt;65px）</option>
+        </select>
+      </label>
+      <div class="config-actions">
+        <button class="btn btn-primary" id="startCalibBtn">开始完整校准</button>
+        <span class="config-hint">定位与甩狙需点击命中，追踪试炼悬停即可</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="lab">
+    <div class="lab-head">
+      <div class="stepper" id="stepper">
+        <div class="step" data-step="aim"><span class="step-num">1</span><b>定位试炼</b></div>
+        <div class="step" data-step="track"><span class="step-num">2</span><b>追踪试炼</b></div>
+        <div class="step" data-step="sniper"><span class="step-num">3</span><b>甩狙测试</b></div>
+      </div>
+      <div class="lab-meta">
+        <h2 id="modeTitle">完整校准流程</h2>
+        <p id="modeDesc">依次完成定位、追踪、甩狙三项试炼后，才会生成专属灵敏度方案。</p>
+      </div>
+    </div>
+
+    <div class="stage-shell">
+      <div class="stage" id="stage">
+        <div class="target" id="target"></div>
+        <div class="center-zone hidden" id="centerZone"><span id="centerText">回中</span></div>
+        <div class="crosshair" id="crosshair">
+          <i class="ch up"></i><i class="ch down"></i><i class="ch left"></i><i class="ch right"></i>
+        </div>
+        <div class="stage-overlay idle" id="idleOverlay">
+          <strong>准备就绪</strong>
+          <span>点击“开始完整校准”进行三项试炼</span>
+        </div>
+        <div class="stage-overlay countdown hidden" id="countdownOverlay">3</div>
+        <div class="stage-overlay paused hidden" id="pausedOverlay">鼠标已离开试炼场，计时暂停</div>
+      </div>
+
+      <div class="hud">
+        <div class="hud-time"><b id="hudTime">10.0</b><span>秒</span></div>
+        <div class="hud-metrics">
+          <div class="metric"><span class="metric-label" id="m1Label">悬停率</span><b id="m1Value">--</b></div>
+          <div class="metric"><span class="metric-label" id="m2Label">悬停时长</span><b id="m2Value">--</b></div>
+          <div class="metric"><span class="metric-label" id="m3Label">阶段</span><b id="m3Value">--</b></div>
+          <div class="metric"><span class="metric-label" id="m4Label">模式</span><b id="m4Value">--</b></div>
+        </div>
+        <div class="hud-bar"><i id="timeBar"></i></div>
+      </div>
+
+      <div class="lab-actions">
+        <button class="btn btn-start" id="startCalibBtn2">开始完整校准</button>
+        <p class="calib-hint">必须依次完成定位、追踪、甩狙三项，才会生成灵敏度</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="results hidden" id="results">
+    <div class="results-head">
+      <div class="grade-box">
+        <span class="grade-label">综合评级</span>
+        <b id="grade">A</b>
+      </div>
+      <div class="score-box">
+        <span class="grade-label">综合得分</span>
+        <b id="score">0</b>
+        <div class="score-bar"><i id="scoreBar"></i></div>
+      </div>
+      <p id="scoreNote" class="score-note">完成定位、追踪、甩狙三项试炼后，才会生成灵敏度方案。</p>
+      <p id="familiarityNote" class="score-note"></p>
+    </div>
+
+    <div class="sens-grid">
+      <div class="sens-panel cs2">
+        <div class="sens-game"><span class="game-tag">CS2</span> 反恐精英2</div>
+        <div class="sens-value">灵敏度 <b id="csSens">--</b></div>
+        <div class="sens-sub">eDPI <b id="csEdpi">--</b> · 360° 移动 <b id="csCm">--</b> cm</div>
+        <div class="sens-note" id="csNote">换算 Valorant ≈ --</div>
+      </div>
+      <div class="sens-panel val">
+        <div class="sens-game"><span class="game-tag val">VAL</span> 瓦罗兰特</div>
+        <div class="sens-value">灵敏度 <b id="valSens">--</b></div>
+        <div class="sens-sub">eDPI <b id="valEdpi">--</b> · 360° 移动 <b id="valCm">--</b> cm</div>
+        <div class="sens-note" id="valNote">换算 CS2 ≈ --</div>
+      </div>
+    </div>
+
+    <div class="data-strip" id="dataStrip"></div>
+
+    <div class="advice">
+      <h3>微调提升建议</h3>
+      <ol id="suggestions"></ol>
+      <p class="advice-foot">建议按推荐值进入游戏后先热身 10 分钟，再做一轮测试微调；每次只调整 5%~10%，并保持 Raw Input / 原始输入开启。</p>
+      <p class="advice-foot" id="disclaimer">以上灵敏度以实际游戏为准，仅作参考；CS2 与 Valorant 的 FOV 与武器手感不同，最终请以游戏内实测为准。</p>
+    </div>
+  </section>
+
+  <section class="setup">
+    <div class="setup-head"><h3>测前准备</h3><p>保证测试结果和游戏手感一致</p></div>
+    <ul class="setup-list">
+      <li>Windows 鼠标指针速度设为 6/11，关闭“提高指针精确度”</li>
+      <li>游戏内开启 Raw Input / 原始输入，关闭鼠标加速</li>
+      <li>使用鼠标驱动中的原生 DPI，不要用系统缩放补偿</li>
+      <li>坐姿、桌垫位置固定，测试前先热手 2 分钟</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="footer">AimSense · 单文件在线版 · 可直接打开或上传到任意静态托管</footer>
+
+<script>
+(() => {
+  'use strict';
+
+  const DURATION = 10000;
+  const COUNTDOWN = 3000;
+  const CONV = 3.1818;
+  const $ = id => document.getElementById(id);
+
+  const els = {
+    game: $('game'), dpi: $('dpi'), gameSens: $('gameSens'), currentEdpi: $('currentEdpi'),
+    style: $('style'), pad: $('pad'), size: $('size'),
+    startCalibBtn: $('startCalibBtn'), startCalibBtn2: $('startCalibBtn2'),
+    modeTitle: $('modeTitle'), modeDesc: $('modeDesc'),
+    stage: $('stage'), target: $('target'), crosshair: $('crosshair'), centerZone: $('centerZone'), centerText: $('centerText'),
+    idleOverlay: $('idleOverlay'), countdownOverlay: $('countdownOverlay'), pausedOverlay: $('pausedOverlay'),
+    hudTime: $('hudTime'), timeBar: $('timeBar'),
+    results: $('results'), grade: $('grade'), score: $('score'), scoreBar: $('scoreBar'),
+    scoreNote: $('scoreNote'), familiarityNote: $('familiarityNote'),
+    csSens: $('csSens'), csEdpi: $('csEdpi'), csCm: $('csCm'), csNote: $('csNote'),
+    valSens: $('valSens'), valEdpi: $('valEdpi'), valCm: $('valCm'), valNote: $('valNote'),
+    dataStrip: $('dataStrip'), suggestions: $('suggestions')
+  };
+
+  const MODE_META = {
+    aim: {
+      title: '定位试炼',
+      desc: '目标大小随机，鼠标移到目标上点击左键命中，点击后下一个目标立即出现。'
+    },
+    track: {
+      title: '追踪试炼',
+      desc: '目标沿复杂轨迹移动，准星悬停在目标上越久，追踪评分越高。'
+    },
+    sniper: {
+      title: '甩狙测试',
+      desc: '每枪只有一次机会，目标存活 2.0 秒；开枪后必须回中心圈内停留 2 秒，下一个目标才会出现。'
+    }
+  };
+
+  const TARGET_R = { small: 20, medium: 28, large: 36 };
+  const CENTER_R = 30;
+  const TARGET_LIFE = 2000;
+  const RECENTER_HOLD = 2000;
+  const ORDER = ['aim', 'track', 'sniper'];
+  const STORE_KEY = 'aimsenseCalibration_v2';
+
+  let mode = 'aim';
+  let phase = 'idle';
+  let phaseStart = 0;
+  let wallShift = 0;
+  let paused = false;
+  let pauseStart = 0;
+  let lastActive = 0;
+  let lastFrameT = 0;
+  let rafId = null;
+  let calibrating = false;
+  let stepIndex = 0;
+  let completed = { aim: false, track: false, sniper: false };
+  let pointer = { x: -9999, y: -9999, inStage: false };
+  let target = { x: 0, y: 0, r: 28 };
+  let aimAcq = null;
+  let sniperMode = 'acquire';
+  let recenterStart = 0;
+  let centerArrived = false;
+  let centerHoldStart = 0;
+  let stats = blankStats();
+
+  function blankStats() {
+    return {
+      aim: { hits: 0, misses: 0, qualities: [], reactions: [], hitTimes: [], corrections: [], passesTotal: 0, travelTotal: 0, distTotal: 0, spawns: 0 },
+      track: { hoverMs: 0, weighted: 0, acc: 0 },
+      sniper: { hits: 0, misses: 0, timeouts: 0, qualities: [], reactions: [], hitTimes: [], recenterTimes: [], spawns: 0 }
+    };
+  }
+
+  function resetStepStats(m) { stats[m] = blankStats()[m]; }
+  function avg(arr) { return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0; }
+  function clamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
+  function round2(v) { return Math.round(v * 100) / 100; }
+
+  function activeNow() {
+    return paused ? lastActive : performance.now() - wallShift;
+  }
+
+  function showIdle(title, sub) {
+    els.idleOverlay.querySelector('strong').textContent = title;
+    els.idleOverlay.querySelector('span').textContent = sub;
+    els.idleOverlay.classList.remove('hidden');
+  }
+
+  function hideOverlays() {
+    els.countdownOverlay.classList.add('hidden');
+    els.pausedOverlay.classList.add('hidden');
+  }
+
+  function pauseRun() {
+    if (paused || phase !== 'running') return;
+    paused = true;
+    pauseStart = performance.now();
+    els.pausedOverlay.classList.remove('hidden');
+  }
+
+  function resumeRun() {
+    if (!paused) return;
+    wallShift += performance.now() - pauseStart;
+    paused = false;
+    els.pausedOverlay.classList.add('hidden');
+    lastFrameT = activeNow();
+  }
+
+  function setMetric(index, label, value) {
+    $('m' + index + 'Label').textContent = label;
+    $('m' + index + 'Value').textContent = value;
+  }
+
+  function refreshMetrics(elapsed) {
+    if (mode === 'track') {
+      const s = stats.track;
+      const stageLabel = elapsed < 4000 ? '中速' : elapsed < 7500 ? '高速' : '极速';
+      setMetric(1, '悬停率', s.acc.toFixed(0) + '%');
+      setMetric(2, '悬停时长', (s.hoverMs / 1000).toFixed(1) + 's');
+      setMetric(3, '阶段', stageLabel);
+      setMetric(4, '模式', '追踪');
+    } else if (mode === 'aim') {
+      const s = stats.aim;
+      const ar = avg(s.reactions);
+      const q = s.qualities.length ? avg(s.qualities) * 100 : 0;
+      setMetric(1, '命中数', s.hits + ' 个');
+      setMetric(2, '脱靶', s.misses + ' 次');
+      setMetric(3, '平均精度', q.toFixed(0) + '%');
+      setMetric(4, '平均反应', ar ? ar.toFixed(0) + 'ms' : '--');
+    } else if (mode === 'sniper') {
+      const s = stats.sniper;
+      const ar = avg(s.reactions);
+      const rc = avg(s.recenterTimes);
+      const q = s.qualities.length ? avg(s.qualities) * 100 : 0;
+      setMetric(1, '命中数', s.hits + ' 个');
+      setMetric(2, '脱靶', s.misses + ' 次');
+      setMetric(3, '平均精度', q.toFixed(0) + '%');
+      setMetric(4, '平均回中', rc ? rc.toFixed(0) + 'ms' : '--');
+    }
+  }
+
+  function updateHUD(elapsed) {
+    if (phase === 'running') {
+      const remain = Math.max(0, DURATION - elapsed);
+      els.hudTime.textContent = (remain / 1000).toFixed(1);
+      els.timeBar.style.width = clamp(elapsed / DURATION * 100, 0, 100) + '%';
+    } else {
+      els.hudTime.textContent = '10.0';
+      els.timeBar.style.width = '0%';
+    }
+  }
+
+  function renderTarget() {
+    const rect = els.stage.getBoundingClientRect();
+    target.x = clamp(target.x, 20, Math.max(20, rect.width - 20));
+    target.y = clamp(target.y, 20, Math.max(20, rect.height - 20));
+    els.target.style.left = target.x + 'px';
+    els.target.style.top = target.y + 'px';
+    els.target.style.width = target.r * 2 + 'px';
+    els.target.style.height = target.r * 2 + 'px';
+  }
+
+  function insideTarget() {
+    const dx = pointer.x - target.x;
+    const dy = pointer.y - target.y;
+    return dx * dx + dy * dy <= target.r * target.r;
+  }
+
+  function clickQuality() {
+    const dist = Math.hypot(pointer.x - target.x, pointer.y - target.y);
+    return clamp(1 - dist / (target.r * 2), 0, 1);
+  }
+
+  function chosenTargetR() {
+    return TARGET_R[els.size.value] || 28;
+  }
+
+  function popTarget() {
+    els.target.classList.remove('pop');
+    void els.target.offsetWidth;
+    els.target.classList.add('pop');
+  }
+
+  function spawnAimTarget(elapsed, first) {
+    const rect = els.stage.getBoundingClientRect();
+    let x, y, guard = 0;
+    do {
+      x = clamp(rect.width * 0.12 + Math.random() * rect.width * 0.76, 40, rect.width - 40);
+      y = clamp(rect.height * 0.14 + Math.random() * rect.height * 0.72, 40, rect.height - 40);
+      guard++;
+    } while (!first && guard < 24 && Math.hypot(x - target.x, y - target.y) < Math.max(rect.width, rect.height) * 0.16);
+    target.x = x;
+    target.y = y;
+    target.r = clamp(chosenTargetR() * (0.65 + Math.random() * 0.7), 16, 50);
+    aimAcq = {
+      spawnElapsed: elapsed,
+      lastX: pointer.x, lastY: pointer.y,
+      prevDist: Math.hypot(pointer.x - x, pointer.y - y),
+      dir: 0, reversals: 0, passes: 0,
+      inside: false, hit: false, travel: 0,
+      lineDist: Math.hypot(pointer.x - x, pointer.y - y)
+    };
+    stats.aim.spawns++;
+    popTarget();
+    renderTarget();
+  }
+
+  function spawnSniperTarget(elapsed, first) {
+    const rect = els.stage.getBoundingClientRect();
+    let x, y, guard = 0;
+    do {
+      x = clamp(rect.width * 0.16 + Math.random() * rect.width * 0.68, 50, rect.width - 50);
+      y = clamp(rect.height * 0.18 + Math.random() * rect.height * 0.64, 50, rect.height - 50);
+      guard++;
+    } while (!first && guard < 24 && Math.hypot(x - rect.width / 2, y - rect.height / 2) < rect.height * 0.22);
+    target.x = x;
+    target.y = y;
+    target.r = chosenTargetR();
+    aimAcq = {
+      spawnElapsed: elapsed,
+      lastX: pointer.x, lastY: pointer.y,
+      prevDist: Math.hypot(pointer.x - x, pointer.y - y),
+      dir: 0, reversals: 0, passes: 0,
+      inside: false, hit: false, travel: 0,
+      lineDist: Math.hypot(pointer.x - x, pointer.y - y)
+    };
+    sniperMode = 'acquire';
+    centerArrived = false;
+    centerHoldStart = 0;
+    stats.sniper.spawns++;
+    els.target.classList.remove('hidden');
+    els.centerZone.classList.add('hidden');
+    els.centerText.textContent = '回中';
+    popTarget();
+    renderTarget();
+  }
+
+  function renderCenterZone() {
+    const rect = els.stage.getBoundingClientRect();
+    els.centerZone.style.left = rect.width / 2 + 'px';
+    els.centerZone.style.top = rect.height / 2 + 'px';
+    els.centerZone.style.width = CENTER_R * 2 + 'px';
+    els.centerZone.style.height = CENTER_R * 2 + 'px';
+  }
+
+  function moveTrackTarget(elapsed, rect) {
+    const t = elapsed / 1000;
+    const ramp = 1 + Math.min(1, elapsed / DURATION) * 0.6;
+    target.x = rect.width / 2 + Math.sin(t * 1.25 * ramp) * rect.width * 0.32 + Math.sin(t * 0.42 + 2.1) * rect.width * 0.10;
+    target.y = rect.height / 2 + Math.sin(t * 1.7 * ramp + 0.8) * rect.height * 0.22 + Math.sin(t * 0.6 + 1.4) * rect.height * 0.08;
+  }
+
+  function updateAimMetrics(inside) {
+    if (!aimAcq || aimAcq.hit) return;
+    const acq = aimAcq;
+    const dist = Math.hypot(pointer.x - target.x, pointer.y - target.y);
+    if (pointer.inStage) {
+      acq.travel += Math.hypot(pointer.x - acq.lastX, pointer.y - acq.lastY);
+      acq.lastX = pointer.x;
+      acq.lastY = pointer.y;
+    }
+    const change = acq.prevDist - dist;
+    const dir = change > 0.4 ? 1 : change < -0.4 ? -1 : 0;
+    if (dir !== 0) {
+      if (acq.dir !== 0 && dir !== acq.dir) acq.reversals++;
+      acq.dir = dir;
+    }
+    acq.prevDist = dist;
+    const wasInside = acq.inside;
+    acq.inside = inside;
+    if (wasInside && !inside) acq.passes++;
+  }
+
+  function handleAimClick(elapsed) {
+    if (phase !== 'running' || mode !== 'aim' || !aimAcq || aimAcq.hit) return;
+    const s = stats.aim;
+    s.qualities.push(clickQuality());
+    if (insideTarget()) {
+      aimAcq.hit = true;
+      const took = elapsed - aimAcq.spawnElapsed;
+      s.hits++;
+      s.reactions.push(took);
+      s.hitTimes.push(took);
+      s.corrections.push(aimAcq.reversals);
+      s.passesTotal += aimAcq.passes;
+      s.travelTotal += aimAcq.travel;
+      s.distTotal += Math.max(1, aimAcq.lineDist);
+    } else {
+      s.misses++;
+    }
+    spawnAimTarget(elapsed);
+  }
+
+  function handleSniperClick(elapsed) {
+    if (phase !== 'running' || mode !== 'sniper' || !aimAcq || sniperMode !== 'acquire') return;
+    const s = stats.sniper;
+    s.qualities.push(clickQuality());
+    if (insideTarget()) {
+      aimAcq.hit = true;
+      const took = elapsed - aimAcq.spawnElapsed;
+      s.hits++;
+      s.reactions.push(took);
+      s.hitTimes.push(took);
+    } else {
+      s.misses++;
+    }
+    aimAcq.hit = true;
+    sniperMode = 'recenter';
+    recenterStart = elapsed;
+    centerArrived = false;
+    centerHoldStart = 0;
+    els.target.classList.add('hidden');
+    els.centerZone.classList.remove('hidden');
+    els.centerText.textContent = '回中';
+    renderCenterZone();
+  }
+
+  function handleStageClick() {
+    if (phase !== 'running') return;
+    const elapsed = activeNow() - phaseStart;
+    if (mode === 'aim') handleAimClick(elapsed);
+    else if (mode === 'sniper') handleSniperClick(elapsed);
+  }
+
+  function initRun() {
+    const rect = els.stage.getBoundingClientRect();
+    target.x = rect.width / 2;
+    target.y = rect.height / 2;
+    target.r = chosenTargetR();
+    sniperMode = 'acquire';
+    els.target.classList.remove('hidden');
+    els.centerZone.classList.add('hidden');
+    if (mode === 'aim') spawnAimTarget(0, true);
+    else if (mode === 'sniper') spawnSniperTarget(0, true);
+    else renderTarget();
+  }
+
+  function updateRun(t, dt) {
+    const elapsed = t - phaseStart;
+    if (elapsed >= DURATION) {
+      finishStep();
+      return;
+    }
+    if (elapsed > 600 && !els.countdownOverlay.classList.contains('hidden')) {
+      els.countdownOverlay.classList.add('hidden');
+    }
+    const rect = els.stage.getBoundingClientRect();
+    if (mode === 'track') moveTrackTarget(elapsed, rect);
+    renderTarget();
+
+    const inside = pointer.inStage && insideTarget();
+    if (mode === 'track') {
+      const s = stats.track;
+      const dist = Math.hypot(pointer.x - target.x, pointer.y - target.y);
+      const q = clamp(1 - dist / (target.r * 2), 0, 1);
+      if (inside) s.hoverMs += dt;
+      s.weighted += dt * q;
+      s.acc = clamp(s.weighted / elapsed * 100, 0, 100);
+    } else if (mode === 'aim') {
+      updateAimMetrics(inside);
+    } else if (mode === 'sniper') {
+      if (sniperMode === 'acquire') {
+        if (elapsed - aimAcq.spawnElapsed >= TARGET_LIFE) {
+          stats.sniper.timeouts++;
+          stats.sniper.misses++;
+          stats.sniper.qualities.push(0);
+          spawnSniperTarget(elapsed);
+        } else {
+          updateAimMetrics(inside);
+        }
+      } else if (sniperMode === 'recenter') {
+        const dx = pointer.x - rect.width / 2;
+        const dy = pointer.y - rect.height / 2;
+        const inCenter = pointer.inStage && dx * dx + dy * dy <= CENTER_R * CENTER_R;
+        if (inCenter) {
+          if (!centerArrived) {
+            centerArrived = true;
+            centerHoldStart = elapsed;
+            stats.sniper.recenterTimes.push(elapsed - recenterStart);
+          }
+          const hold = elapsed - centerHoldStart;
+          const remain = Math.max(0, RECENTER_HOLD - hold);
+          els.centerText.textContent = (remain / 1000).toFixed(1);
+          if (hold >= RECENTER_HOLD) spawnSniperTarget(elapsed);
+        } else {
+          centerArrived = false;
+          centerHoldStart = 0;
+          els.centerText.textContent = '回中';
+        }
+      }
+    }
+    refreshMetrics(elapsed);
+    updateHUD(elapsed);
+  }
+
+  function renderCountdown(t) {
+    const elapsed = Math.max(0, t - phaseStart);
+    const remain = COUNTDOWN - elapsed;
+    if (remain <= 0) {
+      els.countdownOverlay.textContent = '开始';
+      els.countdownOverlay.classList.add('go');
+      phase = 'running';
+      phaseStart = t;
+      initRun();
+      if (!pointer.inStage) pauseRun();
+      return;
+    }
+    els.countdownOverlay.textContent = String(Math.ceil(remain / 1000));
+  }
+
+  function animateIdle(t) {
+    const rect = els.stage.getBoundingClientRect();
+    const sec = t / 1000;
+    target.x = rect.width / 2 + Math.sin(sec * 0.7) * rect.width * 0.12;
+    target.y = rect.height / 2 + Math.cos(sec * 1.05) * rect.height * 0.08;
+    target.r = chosenTargetR();
+    renderTarget();
+    updateHUD(0);
+  }
+
+  function frame() {
+    const t = activeNow();
+    const dt = paused ? 0 : clamp(t - lastFrameT, 0, 64);
+    if (!paused) lastActive = t;
+    lastFrameT = t;
+
+    if (phase === 'countdown') renderCountdown(t);
+    else if (phase === 'running') updateRun(t, dt);
+    else animateIdle(t);
+
+    rafId = requestAnimationFrame(frame);
+  }
+
+  function renderStepper() {
+    document.querySelectorAll('.step').forEach(el => {
+      const m = el.dataset.step;
+      el.classList.toggle('active', m === mode && calibrating);
+      el.classList.toggle('done', completed[m]);
+    });
+  }
+
+  function setStep(m) {
+    mode = m;
+    els.modeTitle.textContent = MODE_META[m].title;
+    els.modeDesc.textContent = MODE_META[m].desc;
+    renderStepper();
+    hideOverlays();
+    els.centerZone.classList.add('hidden');
+    els.target.classList.remove('hidden');
+    updateHUD(0);
+    resetStepStats(m);
+    setMetric(1, '--', '--');
+    setMetric(2, '--', '--');
+    setMetric(3, '--', '--');
+    setMetric(4, '--', '--');
+  }
+
+  function beginStep(m) {
+    setStep(m);
+    phase = 'countdown';
+    phaseStart = activeNow();
+    lastFrameT = activeNow();
+    els.stage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    els.idleOverlay.classList.add('hidden');
+    els.pausedOverlay.classList.add('hidden');
+    els.countdownOverlay.classList.remove('go');
+    els.countdownOverlay.classList.remove('hidden');
+    els.countdownOverlay.textContent = '3';
+  }
+
+  function startCalibration() {
+    if (phase === 'countdown' || phase === 'running') return;
+    calibrating = true;
+    completed = { aim: false, track: false, sniper: false };
+    stepIndex = 0;
+    stats = blankStats();
+    els.results.classList.add('hidden');
+    showIdle('校准已开始', '请依次完成定位、追踪、甩狙三项试炼');
+    setTimeout(() => beginStep(ORDER[0]), 350);
+  }
+
+  function finishStep() {
+    const s = stats[mode];
+    if (mode === 'track') s.acc = clamp(s.hoverMs / DURATION * 100, 0, 100);
+    completed[mode] = true;
+    phase = 'idle';
+    hideOverlays();
+    renderStepper();
+    updateHUD(0);
+    refreshMetrics(DURATION);
+    if (stepIndex < ORDER.length - 1) {
+      stepIndex++;
+      showIdle('本项完成', '即将进入下一项：' + MODE_META[ORDER[stepIndex]].title);
+      setTimeout(() => beginStep(ORDER[stepIndex]), 700);
+    } else {
+      calibrating = false;
+      els.centerZone.classList.add('hidden');
+      showIdle('校准完成', '三项试炼全部完成，结果已生成');
+      finishCalibration();
+    }
+  }
+
+  function loadStore() {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (raw) {
+        const d = JSON.parse(raw);
+        if (d && typeof d.runs === 'number') return { runs: d.runs || 0, prevScore: d.prevScore || 0 };
+      }
+    } catch (e) {}
+    return { runs: 0, prevScore: 0 };
+  }
+
+  function saveStore(d) {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(d)); } catch (e) {}
+  }
+
+  function computeOverall() {
+    const a = stats.aim, t = stats.track, sn = stats.sniper;
+    const aimRate = a.hits + a.misses ? a.hits / (a.hits + a.misses) : 0;
+    const aimSpeed = a.hitTimes.length ? clamp(120 - avg(a.hitTimes) * 0.09, 0, 100) : 0;
+    const aimQuality = a.qualities.length ? avg(a.qualities) : 0;
+    const aimScore = aimRate * 40 + aimQuality * 35 + aimSpeed * 25;
+    const trackScore = t.acc;
+    const sniperRate = sn.hits + sn.misses ? sn.hits / (sn.hits + sn.misses) : 0;
+    const sniperSpeed = sn.hitTimes.length ? clamp(120 - avg(sn.hitTimes) * 0.09, 0, 100) : 0;
+    const sniperRecenter = sn.recenterTimes.length ? clamp(120 - avg(sn.recenterTimes) * 0.09, 0, 100) : 50;
+    const sniperQuality = sn.qualities.length ? avg(sn.qualities) : 0;
+    const sniperScore = sniperRate * 35 + sniperQuality * 35 + sniperSpeed * 20 + sniperRecenter * 10;
+    return clamp(aimScore * 0.35 + trackScore * 0.30 + sniperScore * 0.35, 0, 100);
+  }
+
+  function finishCalibration() {
+    const overall = computeOverall();
+    const store = loadStore();
+    const prevScore = store.prevScore;
+    store.runs++;
+    store.prevScore = overall;
+    saveStore(store);
+    generateResults(store, prevScore);
+    els.results.classList.remove('hidden');
+    els.results.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function setIdleState() {
+    phase = 'idle';
+    calibrating = false;
+    completed = { aim: false, track: false, sniper: false };
+    stepIndex = 0;
+    mode = 'aim';
+    renderStepper();
+    els.modeTitle.textContent = '完整校准流程';
+    els.modeDesc.textContent = '依次完成定位、追踪、甩狙三项试炼后，才会生成专属灵敏度方案。';
+    hideOverlays();
+    els.centerZone.classList.add('hidden');
+    els.target.classList.remove('hidden');
+    showIdle('准备就绪', '点击“开始完整校准”进行三项试炼');
+    updateHUD(0);
+    setMetric(1, '--', '--');
+    setMetric(2, '--', '--');
+    setMetric(3, '--', '--');
+    setMetric(4, '--', '--');
+  }
+
+  function generateResults(store, prevScore) {
+    const overall = computeOverall();
+    const grade = overall >= 90 ? 'S' : overall >= 80 ? 'A' : overall >= 70 ? 'B' : overall >= 60 ? 'C' : 'D';
+    els.grade.textContent = grade;
+    els.score.textContent = Math.round(overall);
+    els.scoreBar.style.width = overall + '%';
+    const rec = recommend(store);
+    els.scoreNote.textContent = '定位、追踪、甩狙三项试炼全部完成，检测到 ' + rec.sensBand + ' 配置，已做针对性修正；结果仅作参考。';
+    const delta = overall - prevScore;
+    if (store.runs === 1) {
+      els.familiarityNote.textContent = '首轮完整校准。后续复测会自动加入熟悉度收敛，避免越测越熟导致灵敏度漂移。';
+    } else {
+      els.familiarityNote.textContent = '第 ' + store.runs + ' 轮完整校准，已应用熟悉度收敛修正；本轮得分变化 ' + (delta >= 0 ? '+' : '') + Math.round(delta) + ' 分。';
+    }
+    renderSens(rec);
+    renderDataStrip();
+    renderSuggestions(rec, store);
+  }
+
+  function recommend(store) {
+    const dpi = parseInt(els.dpi.value, 10) || 800;
+    const gameSens = parseFloat(els.gameSens.value);
+    const style = els.style.value;
+    const pad = els.pad.value;
+    const size = els.size.value;
+    const fallback = {
+      arm: { cs: 560, val: 178 },
+      mixed: { cs: 820, val: 260 },
+      wrist: { cs: 1100, val: 350 }
+    };
+    const padF = { small: 1.08, medium: 1.0, large: 0.94 };
+    const sizeF = { small: 0.94, medium: 1.0, large: 1.06 };
+    const userEdpi = gameSens > 0 ? gameSens * dpi : fallback[style][els.game.value];
+    const anchorCs = els.game.value === 'cs2' ? userEdpi : userEdpi * CONV;
+    const anchorVal = els.game.value === 'cs2' ? userEdpi / CONV : userEdpi;
+    const baseCs = anchorCs * padF[pad] * sizeF[size];
+    const baseVal = anchorVal * padF[pad] * sizeF[size];
+    let cs = baseCs;
+    let val = baseVal;
+
+    const tr = stats.track.acc;
+    if (tr > 0) {
+      if (tr < 40) { cs *= 0.88; val *= 0.88; }
+      else if (tr < 55) { cs *= 0.95; val *= 0.95; }
+      else if (tr > 85) { cs *= 1.04; val *= 1.04; }
+    }
+
+    const a = stats.aim;
+    let avgCorr = 0, avgHitTime = 0, passRate = 0, travelAvg = 0, aimRate = 0, aimQuality = 0;
+    if (a.hits + a.misses > 0) {
+      avgCorr = avg(a.corrections);
+      avgHitTime = avg(a.hitTimes);
+      passRate = a.passesTotal / Math.max(1, a.hits);
+      travelAvg = a.travelTotal / Math.max(1, a.distTotal);
+      aimRate = a.hits / (a.hits + a.misses);
+      aimQuality = a.qualities.length ? avg(a.qualities) : 0;
+      if (avgCorr >= 2.5) { cs *= 0.90; val *= 0.90; }
+      else if (avgCorr <= 0.8 && avgHitTime > 700) { cs *= 1.06; val *= 1.06; }
+      if (passRate > 0.35) { cs *= 0.92; val *= 0.92; }
+      if (avgHitTime > 950) { cs *= 1.08; val *= 1.08; }
+      else if (avgHitTime < 420 && avgCorr < 1.5) { cs *= 1.03; val *= 1.03; }
+      if (aimRate < 0.55 && avgHitTime > 800) { cs *= 1.06; val *= 1.06; }
+      if (travelAvg > 1.8) { cs *= 0.95; val *= 0.95; }
+      if (aimQuality > 0 && aimQuality < 0.75) { cs *= 0.92; val *= 0.92; }
+    }
+
+    const sn = stats.sniper;
+    let sniperRate = 0, sniperRecenter = 0, sniperQuality = 0;
+    if (sn.hits + sn.misses > 0) {
+      sniperRate = sn.hits / (sn.hits + sn.misses);
+      sniperRecenter = avg(sn.recenterTimes);
+      sniperQuality = sn.qualities.length ? avg(sn.qualities) : 0;
+      if (sniperRate < 0.55) { cs *= 0.92; val *= 0.92; }
+      if (sniperRecenter > 950) { cs *= 1.06; val *= 1.06; }
+      if (sniperQuality > 0 && sniperQuality < 0.75) { cs *= 0.92; val *= 0.92; }
+    }
+
+    const lowSens = anchorCs < 450;
+    const highSens = anchorCs > 1200;
+    if (lowSens && avgHitTime > 800) { cs *= 1.12; val *= 1.12; }
+    if (highSens && avgCorr >= 2) { cs *= 0.88; val *= 0.88; }
+    if (lowSens && aimRate > 0 && aimRate < 0.6) { cs *= 1.06; val *= 1.06; }
+    if (highSens && aimRate > 0 && aimRate < 0.6) { cs *= 0.90; val *= 0.90; }
+
+    const sensBand = anchorCs < 450 ? '低敏' : anchorCs > 1200 ? '高敏' : '适中';
+    if (lowSens) {
+      cs = Math.max(cs, 260);
+      val = Math.max(val, 90);
+    }
+    if (highSens) {
+      cs = Math.min(cs, 1700);
+      val = Math.min(val, 560);
+    }
+
+    const damp = Math.max(0.85, 1 - Math.max(0, store.runs - 1) * 0.03);
+    cs = baseCs + (cs - baseCs) * damp;
+    val = baseVal + (val - baseVal) * damp;
+
+    cs = clamp(cs, 220, 1900);
+    val = clamp(val, 85, 620);
+    const csSens = round2(clamp(cs / dpi, 0.05, 20));
+    const valSens = round2(clamp(val / dpi, 0.03, 20));
+    const sizeLabel = { small: '小', medium: '中', large: '大' }[size];
+    return {
+      dpi, csSens, valSens, sizeLabel,
+      csEdpi: Math.round(csSens * dpi),
+      valEdpi: Math.round(valSens * dpi),
+      csCm: (360 / (csSens * dpi * 0.022) * 2.54).toFixed(1),
+      valCm: (360 / (valSens * dpi * 0.07) * 2.54).toFixed(1),
+      currentCsEdpi: Math.round(anchorCs),
+      currentValEdpi: Math.round(anchorVal),
+      csDeltaPct: Math.round((csSens * dpi - anchorCs) / Math.max(1, anchorCs) * 100),
+      valDeltaPct: Math.round((valSens * dpi - anchorVal) / Math.max(1, anchorVal) * 100),
+      avgCorr, avgHitTime, passRate, travelAvg, aimRate, aimQuality,
+      sniperRate, sniperRecenter, sniperQuality, sensBand, runs: store.runs
+    };
+  }
+
+  function renderSens(rec) {
+    els.csSens.textContent = rec.csSens;
+    els.csEdpi.textContent = rec.csEdpi;
+    els.csCm.textContent = rec.csCm;
+    els.valSens.textContent = rec.valSens;
+    els.valEdpi.textContent = rec.valEdpi;
+    els.valCm.textContent = rec.valCm;
+    const csDelta = (rec.csDeltaPct >= 0 ? '+' : '') + rec.csDeltaPct + '%';
+    const valDelta = (rec.valDeltaPct >= 0 ? '+' : '') + rec.valDeltaPct + '%';
+    els.csNote.textContent = '目标大小 ' + rec.sizeLabel + ' · 当前 eDPI ≈ ' + rec.currentCsEdpi + ' → 推荐 ' + rec.csEdpi + '（' + csDelta + '）· 换算 Valorant ≈ ' + round2(rec.csSens / CONV);
+    els.valNote.textContent = '目标大小 ' + rec.sizeLabel + ' · 当前 eDPI ≈ ' + rec.currentValEdpi + ' → 推荐 ' + rec.valEdpi + '（' + valDelta + '）· 换算 CS2 ≈ ' + round2(rec.valSens * CONV);
+    document.querySelectorAll('.sens-panel').forEach(el => el.classList.remove('active'));
+    document.querySelector('.sens-panel.' + (els.game.value === 'cs2' ? 'cs2' : 'val')).classList.add('active');
+  }
+
+  function renderDataStrip() {
+    const a = stats.aim;
+    const tr = stats.track;
+    const sn = stats.sniper;
+    const reactionAvg = avg(a.reactions);
+    const aimRate = a.hits + a.misses ? a.hits / (a.hits + a.misses) * 100 : 0;
+    const aimQuality = a.qualities.length ? avg(a.qualities) * 100 : 0;
+    const sniperRate = sn.hits + sn.misses ? sn.hits / (sn.hits + sn.misses) * 100 : 0;
+    const sniperQuality = sn.qualities.length ? avg(sn.qualities) * 100 : 0;
+    const items = [
+      { label: '定位命中率', value: aimRate.toFixed(0) + '%', bar: aimRate },
+      { label: '定位平均精度', value: aimQuality.toFixed(0) + '%', bar: aimQuality },
+      { label: '定位平均反应', value: reactionAvg ? reactionAvg.toFixed(0) + 'ms' : '--', bar: reactionAvg ? clamp(120 - reactionAvg * 0.09, 0, 100) : 0 },
+      { label: '追踪精准度', value: tr.acc ? tr.acc.toFixed(0) + '%' : '--', bar: tr.acc || 0 },
+      { label: '甩狙命中率', value: sniperRate.toFixed(0) + '%', bar: sniperRate },
+      { label: '甩狙平均精度', value: sniperQuality.toFixed(0) + '%', bar: sniperQuality }
+    ];
+    els.dataStrip.innerHTML = items.map(item =>
+      '<div class="data-item"><span>' + item.label + '</span><b>' + item.value + '</b><div class="data-bar"><i style="width:' + item.bar + '%"></i></div></div>'
+    ).join('');
+  }
+
+  function renderSuggestions(rec, store) {
+    const a = stats.aim;
+    const tr = stats.track;
+    const sn = stats.sniper;
+    const tips = [];
+    if (tr.acc < 45) {
+      tips.push({ tone: 'high', text: '追踪试炼得分 ' + tr.acc.toFixed(0) + '%，复杂轨迹下容易跟丢。建议降低 8%~12% 灵敏度，并放慢准星启动速度。' });
+    }
+    if (a.hits + a.misses > 0 && rec.aimRate < 0.6) {
+      tips.push({ tone: 'high', text: '定位命中率仅 ' + (rec.aimRate * 100).toFixed(0) + '%，点击时机或准星停稳度不足。降低 8%~10% 灵敏度，练习“瞄准到点再开枪”。' });
+    }
+    if (a.hits > 0 && rec.avgCorr >= 2.5) {
+      tips.push({ tone: 'high', text: '定位时平均修正 ' + rec.avgCorr.toFixed(1) + ' 次，明显过冲。降低 10% 灵敏度，练习“一次甩到位”的节奏。' });
+    }
+    if (a.hits > 0 && rec.passRate > 0.35) {
+      tips.push({ tone: 'mid', text: '准星多次穿过目标（穿过率 ' + (rec.passRate * 100).toFixed(0) + '%），收枪略慢。可下调 8%~12% 并加强末段微调。' });
+    }
+    if (a.hitTimes.length && rec.avgHitTime > 950) {
+      tips.push({ tone: 'mid', text: '平均命中耗时 ' + rec.avgHitTime.toFixed(0) + 'ms，定位偏慢。上调 8%~12% 灵敏度，减少鼠标移动行程。' });
+    }
+    if (a.hits >= 6 && rec.aimRate >= 0.85 && rec.avgHitTime < 500) {
+      tips.push({ tone: 'good', text: '定位又快又准（命中率 ' + (rec.aimRate * 100).toFixed(0) + '%，平均 ' + rec.avgHitTime.toFixed(0) + 'ms），适合步枪与泼射打法，保持当前方案。' });
+    }
+    if (a.qualities.length && rec.aimQuality < 0.75) {
+      tips.push({ tone: 'high', text: '定位平均精度仅 ' + (rec.aimQuality * 100).toFixed(0) + '%，点击点常偏离目标中心。降低 8%~10% 灵敏度，练习末段微调。' });
+    }
+    if (sn.hits + sn.misses > 0 && rec.sniperRate < 0.6) {
+      tips.push({ tone: 'high', text: '甩狙命中率仅 ' + (rec.sniperRate * 100).toFixed(0) + '%，建议降低 8%~10% 灵敏度，并练习开镜后的停稳再开枪。' });
+    }
+    if (sn.recenterTimes.length && rec.sniperRecenter > 900) {
+      tips.push({ tone: 'mid', text: '甩狙回中平均耗时 ' + rec.sniperRecenter.toFixed(0) + 'ms 偏慢，可小幅上调 5%~8% 灵敏度，缩短回位行程。' });
+    }
+    if (sn.hits >= 5 && rec.sniperRate >= 0.85 && rec.sniperRecenter < 700) {
+      tips.push({ tone: 'good', text: '甩狙定位与回中都很稳定（命中率 ' + (rec.sniperRate * 100).toFixed(0) + '%），适合狙镜灵敏度，保持当前方案。' });
+    }
+    if (sn.qualities.length && rec.sniperQuality < 0.75) {
+      tips.push({ tone: 'high', text: '甩狙平均精度仅 ' + (rec.sniperQuality * 100).toFixed(0) + '%，甩枪落点常偏离中心白点。降低 8%~10% 灵敏度，练习甩到点再开枪。' });
+    }
+    if (sn.timeouts > 0) {
+      tips.push({ tone: 'mid', text: '甩狙测试有 ' + sn.timeouts + ' 个目标超时未开枪，建议在游戏内练习预瞄与架点，再复测一轮。' });
+    }
+    if (rec.sensBand !== '适中') {
+      tips.push({ tone: 'mid', text: '检测到' + rec.sensBand + '配置，推荐结果已按区间修正：低敏侧重提速，高敏侧重控枪。' });
+    }
+    if (tr.acc > 75 && rec.aimRate >= 0.7 && rec.sniperRate >= 0.7) {
+      tips.push({ tone: 'good', text: '三项数据均衡且稳定，当前目标大小下这套灵敏度匹配度较高。' });
+    }
+    if (store.runs >= 2) {
+      tips.push({ tone: 'mid', text: '已进入第 ' + store.runs + ' 轮复测，结果加入熟悉度收敛。若两轮推荐值变化小于 0.05，建议锁定灵敏度并转战游戏内实战。' });
+    }
+    if (tips.length < 3) {
+      tips.push({ tone: 'mid', text: '每轮只调整 5%~10%，在游戏内热身后再测试，找到手感与精度的平衡点。' });
+    }
+    if (tips.length < 4) {
+      tips.push({ tone: 'good', text: '开启 Raw Input、关闭鼠标加速后，测试结果才能直接迁移到游戏内。' });
+    }
+    els.suggestions.innerHTML = tips.map((tip, i) =>
+      '<li class="tone-' + tip.tone + '"><span>' + (i + 1) + '</span><p>' + tip.text + '</p></li>'
+    ).join('');
+  }
+
+  function updateCurrentEdpi() {
+    const dpi = parseInt(els.dpi.value, 10) || 800;
+    const sens = parseFloat(els.gameSens.value);
+    els.currentEdpi.textContent = sens > 0 ? '当前 eDPI ≈ ' + Math.round(sens * dpi) : '当前 eDPI ≈ --';
+  }
+
+  els.game.addEventListener('change', updateCurrentEdpi);
+  els.dpi.addEventListener('change', updateCurrentEdpi);
+  els.gameSens.addEventListener('input', updateCurrentEdpi);
+
+  els.startCalibBtn.addEventListener('click', startCalibration);
+  els.startCalibBtn2.addEventListener('click', startCalibration);
+
+  els.stage.addEventListener('pointermove', e => {
+    const rect = els.stage.getBoundingClientRect();
+    pointer.x = e.clientX - rect.left;
+    pointer.y = e.clientY - rect.top;
+    pointer.inStage = true;
+    els.crosshair.style.opacity = '1';
+    els.crosshair.style.left = pointer.x + 'px';
+    els.crosshair.style.top = pointer.y + 'px';
+    if (paused) resumeRun();
+  });
+
+  els.stage.addEventListener('pointerenter', () => {
+    pointer.inStage = true;
+    if (paused) resumeRun();
+  });
+
+  els.stage.addEventListener('pointerleave', () => {
+    pointer.inStage = false;
+    els.crosshair.style.opacity = '0';
+    pauseRun();
+  });
+
+  els.stage.addEventListener('pointerdown', handleStageClick);
+  window.addEventListener('resize', () => renderTarget());
+
+  lastActive = performance.now() - wallShift;
+  lastFrameT = lastActive;
+  setIdleState();
+  updateCurrentEdpi();
+  rafId = requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
