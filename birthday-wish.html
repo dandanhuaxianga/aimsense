@@ -1,0 +1,1235 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#0b0d17" />
+<title>生日祝福页（公开示例）</title>
+<style>
+  :root{
+    --ink:#0b0d17;
+    --ink-2:#121529;
+    --cream:#f6ecd9;
+    --muted:#b7b3c9;
+    --coral:#ff6b6b;
+    --gold:#ffc857;
+    --teal:#2ec4b6;
+    --sky:#5aa9e6;
+    --paper:#f8f2e6;
+    --ink-on-paper:#2a2233;
+    --shadow: 0 24px 60px rgba(0,0,0,.45);
+    --r: 8px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--ink);
+    color:var(--cream);
+    font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",system-ui,-apple-system,"Segoe UI",sans-serif;
+    line-height:1.65;
+    overflow-x:hidden;
+    -webkit-tap-highlight-color:transparent;
+  }
+  img{max-width:100%;display:block}
+  button{font:inherit;color:inherit;cursor:pointer}
+  canvas{display:block}
+  .wrap{max-width:960px;margin:0 auto;padding:0 20px}
+
+  /* ---------- background ---------- */
+  #fx{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+  #sparks{position:fixed;inset:0;width:100%;height:100%;z-index:70;pointer-events:none}
+  body::before{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(60% 46% at 82% 4%, rgba(90,169,230,.14), transparent 70%),
+      radial-gradient(52% 40% at 8% 22%, rgba(255,107,107,.12), transparent 70%),
+      radial-gradient(60% 50% at 50% 108%, rgba(46,196,182,.13), transparent 70%);
+  }
+
+  /* ---------- shared ---------- */
+  main{position:relative;z-index:2}
+  .stage{
+    max-width:960px;margin:0 auto;
+    padding:clamp(28px,6vw,72px) clamp(18px,4vw,32px);
+  }
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:13px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--gold);margin:0 0 14px;
+  }
+  .eyebrow::before{content:"";width:26px;height:1px;background:currentColor;opacity:.75}
+  h1,h2,h3{font-family:"Songti SC","Noto Serif SC",Georgia,"Times New Roman",serif;line-height:1.15;margin:0}
+  h1{font-size:clamp(34px,8vw,64px);letter-spacing:0}
+  h2{font-size:clamp(26px,5.4vw,44px);letter-spacing:0}
+  h3{font-size:clamp(19px,3.6vw,26px);letter-spacing:0}
+  p{margin:0 0 14px}
+  .lead{font-size:clamp(15px,2.6vw,18px);color:var(--muted);max-width:56ch}
+  .card{
+    background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.02));
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:var(--r);
+    padding:clamp(18px,3.4vw,26px);
+  }
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:10px;
+    min-height:50px;padding:0 22px;border:0;border-radius:var(--r);
+    background:var(--coral);color:#210c10;font-weight:700;font-size:16px;
+    box-shadow:0 10px 28px rgba(255,107,107,.28);
+    transition:transform .14s ease,box-shadow .14s ease,background .14s ease,filter .14s ease;
+  }
+  .btn:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(255,107,107,.36)}
+  .btn.pressing{transform:translateY(1px) scale(.955);box-shadow:0 4px 14px rgba(255,107,107,.22);filter:brightness(.94)}
+  .btn.ghost{background:transparent;color:var(--cream);border:1px solid rgba(255,255,255,.28);box-shadow:none}
+  .btn.ghost:hover{background:rgba(255,255,255,.07);box-shadow:none}
+  .btn.ghost.pressing{background:rgba(255,255,255,.14);box-shadow:none}
+  .btn.gold{background:var(--gold);color:#2b1d00;box-shadow:0 10px 28px rgba(255,200,87,.24)}
+  .btn.gold.pressing{box-shadow:0 4px 14px rgba(255,200,87,.2)}
+  .row{display:flex;flex-wrap:wrap;gap:12px}
+  .muted{color:var(--muted)}
+  .tiny{font-size:13px}
+  .note{font-size:12.5px;color:var(--muted)}
+  .hint{margin-top:12px;font-size:13px;color:var(--muted);min-height:20px}
+
+  /* ---------- progress dots ---------- */
+  .dots{
+    position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:40;
+    display:flex;flex-direction:column;gap:12px;
+  }
+  .dots button{
+    width:12px;height:12px;padding:0;border-radius:50%;
+    background:rgba(255,255,255,.22);border:1px solid transparent;
+    transition:background .2s ease,transform .2s ease;
+  }
+  .dots button:hover{background:rgba(255,255,255,.45)}
+  .dots button.active{background:var(--gold);transform:scale(1.35)}
+  .dots button.pressing{background:rgba(255,255,255,.5);transform:scale(1.22)}
+  @media (max-width:720px){ .dots{right:8px;gap:10px} .dots button{width:10px;height:10px} }
+
+  /* ---------- scratch ---------- */
+  #scratch{
+    position:fixed;inset:0;z-index:60;background:var(--ink);
+    display:grid;place-items:center;padding:22px;
+  }
+  #scratch.leaving{animation:scratchOut .9s ease forwards}
+  @keyframes scratchOut{to{opacity:0;visibility:hidden}}
+  .scratch-box{width:min(560px,100%);text-align:center}
+  .scratch-frame{
+    position:relative;border-radius:var(--r);overflow:hidden;
+    border:1px solid rgba(255,255,255,.18);
+    box-shadow:var(--shadow);
+    background:
+      radial-gradient(120% 120% at 20% 0%, rgba(255,200,87,.18), transparent 60%),
+      linear-gradient(160deg,#1b1e35,#101222);
+  }
+  .scratch-under{
+    padding:clamp(30px,7vw,54px) clamp(20px,5vw,40px);
+    min-height:300px;display:flex;flex-direction:column;justify-content:center;gap:10px;
+  }
+  .scratch-under .big{font-family:"Songti SC","Noto Serif SC",Georgia,serif;font-size:clamp(28px,7vw,46px);line-height:1.2}
+  .scratch-under .sub{color:var(--muted);font-size:clamp(14px,2.6vw,16px)}
+  #scratchCanvas{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair;touch-action:none}
+  .scratch-hint{margin:18px 0 0;color:var(--muted);font-size:15px}
+
+  /* ---------- hero ---------- */
+  #hero{padding-top:clamp(40px,9vh,90px)}
+  .hero-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:clamp(20px,4vw,40px);align-items:center}
+  @media (max-width:760px){ .hero-grid{grid-template-columns:1fr} }
+  .hero-name{color:var(--cream)}
+  .hero-name em{font-style:normal;color:var(--gold);white-space:nowrap}
+  .countdown{
+    margin-top:18px;display:inline-flex;align-items:baseline;gap:10px;
+    padding:12px 16px;border-radius:var(--r);
+    background:rgba(46,196,182,.12);border:1px solid rgba(46,196,182,.32);
+    color:var(--cream);font-size:14px;
+  }
+  .countdown b{font-size:22px;color:var(--teal);font-family:Georgia,serif}
+  .agecard{
+    position:relative;border-radius:var(--r);overflow:hidden;
+    border:1px solid rgba(255,200,87,.35);
+    background:linear-gradient(180deg,rgba(255,200,87,.16),rgba(255,200,87,.04));
+    padding:24px 20px;text-align:center;
+  }
+  .agecard .age{font-family:Georgia,serif;font-size:clamp(58px,14vw,96px);line-height:1;color:var(--gold)}
+  .agecard .cap{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--cream);opacity:.85;margin-top:6px}
+  .agecard .rule{height:1px;background:rgba(255,200,87,.35);margin:16px 0}
+  .agecard .kicker{font-size:14.5px;color:var(--cream);opacity:.92}
+  .mission{margin-top:34px;border-top:1px solid rgba(255,255,255,.12);padding-top:24px}
+  .mission ol{margin:0;padding-left:0;list-style:none;display:grid;gap:12px}
+  .mission li{display:flex;gap:12px;align-items:flex-start;color:var(--cream)}
+  .mission .no{
+    flex:0 0 auto;width:26px;height:26px;border-radius:50%;
+    display:grid;place-items:center;font-size:13px;font-weight:700;
+    background:rgba(255,107,107,.2);color:var(--coral);border:1px solid rgba(255,107,107,.4);
+    margin-top:2px;
+  }
+  .scroll-cue{margin-top:26px;display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px}
+  .scroll-cue .dot{width:8px;height:8px;border-radius:50%;background:var(--teal);animation:pulse 1.6s infinite ease-in-out}
+  @keyframes pulse{0%,100%{transform:scale(.8);opacity:.55}50%{transform:scale(1.25);opacity:1}}
+
+  /* ---------- cake ---------- */
+  #cake .head{max-width:60ch}
+  .cake-scene{
+    margin-top:26px;display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,.75fr);
+    gap:clamp(20px,4vw,34px);align-items:center;
+  }
+  @media (max-width:760px){ .cake-scene{grid-template-columns:1fr} }
+  .cake-art{
+    position:relative;border-radius:var(--r);
+    border:1px solid rgba(255,255,255,.1);
+    background:linear-gradient(180deg,rgba(90,169,230,.1),rgba(255,255,255,.02));
+    padding:28px 20px 22px;display:grid;place-items:end center;align-content:end;min-height:330px;
+  }
+  .candle-row{position:relative;z-index:1;display:flex;justify-content:center;gap:clamp(12px,3vw,22px);margin-bottom:-8px}
+  .candle{
+    position:relative;width:12px;height:64px;border-radius:6px;
+    background:repeating-linear-gradient(180deg,#ff8b8b 0 8px,#f6ecd9 8px 16px);
+    border:1px solid rgba(0,0,0,.18);cursor:pointer;transition:transform .2s ease;
+  }
+  .candle:nth-child(even){background:repeating-linear-gradient(180deg,#8fd3ff 0 8px,#f6ecd9 8px 16px)}
+  .candle:hover{transform:translateY(-2px)}
+  .candle.pressing{transform:translateY(1px) scale(.94)}
+  .wick{position:absolute;left:50%;top:-6px;width:2px;height:6px;background:#2a2233;transform:translateX(-50%);border-radius:2px}
+  .flame{
+    position:absolute;left:50%;top:-30px;width:14px;height:24px;transform:translateX(-50%);
+    border-radius:50% 50% 46% 46%/62% 62% 38% 38%;
+    background:radial-gradient(60% 60% at 50% 72%,#fff8c9 0 34%,#ffc857 44%,#ff8a3d 74%,rgba(255,110,60,0) 78%);
+    filter:drop-shadow(0 0 12px rgba(255,200,87,.8));
+    transform-origin:50% 100%;animation:flicker 1.15s infinite ease-in-out;
+  }
+  @keyframes flicker{
+    0%,100%{transform:translateX(-50%) scale(1) rotate(-1deg)}
+    35%{transform:translateX(-50%) scale(1.08,.94) rotate(2deg)}
+    70%{transform:translateX(-50%) scale(.94,1.08) rotate(-2deg)}
+  }
+  .candle.blown .flame{animation:none;opacity:0;transform:translateX(-50%) scale(.2)}
+  .candle.blown{filter:saturate(.55) brightness(.85)}
+  .smoke{
+    position:absolute;left:50%;top:-24px;width:8px;height:8px;border-radius:50%;
+    background:rgba(255,255,255,.5);opacity:0;transform:translateX(-50%);
+  }
+  .candle.blown .smoke{animation:smoke 1.6s ease-out forwards}
+  @keyframes smoke{
+    0%{opacity:.65;transform:translate(-50%,0) scale(.6)}
+    100%{opacity:0;transform:translate(-34%,-58px) scale(2.3)}
+  }
+  .cake-body{width:min(340px,100%)}
+  .cake-top{
+    height:26px;border-radius:14px 14px 6px 6px;
+    background:linear-gradient(180deg,#ffb3c1,#f2859b);
+    box-shadow:inset 0 -6px 0 rgba(0,0,0,.08);
+  }
+  .drip{
+    height:16px;
+    background:radial-gradient(circle at 10px 0,#ffb3c1 10px,transparent 11px) repeat-x;
+    background-size:22px 16px;
+  }
+  .layer-1{height:44px;background:linear-gradient(180deg,#a9754f,#8a5b3d)}
+  .icing{height:12px;background:#fdf1f4}
+  .layer-2{height:38px;background:linear-gradient(180deg,#c98f66,#a9754f)}
+  .plate{height:10px;border-radius:50%;background:rgba(255,255,255,.28);margin-top:6px;width:112%;margin-left:-6%}
+
+  /* ---------- gifts ---------- */
+  .gift-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:clamp(14px,2.6vw,20px);margin-top:26px}
+  .gift{
+    position:relative;border-radius:var(--r);padding:20px;
+    border:1px solid rgba(255,255,255,.13);
+    background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.018));
+    display:flex;flex-direction:column;gap:10px;min-height:210px;
+    transition:transform .22s ease,border-color .22s ease,background .22s ease;
+  }
+  .gift:hover{transform:translateY(-3px);border-color:rgba(255,200,87,.5);background:linear-gradient(180deg,rgba(255,200,87,.1),rgba(255,255,255,.02))}
+  .gift .tag{
+    align-self:flex-start;font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--teal);border:1px solid rgba(46,196,182,.4);border-radius:999px;padding:3px 10px;
+  }
+  .gift h3{font-size:19px}
+  .gift p{color:var(--muted);font-size:14.5px;margin:0;flex:1}
+  .gift .claim{
+    align-self:flex-start;min-height:44px;padding:0 16px;border-radius:var(--r);
+    border:1px solid rgba(255,200,87,.5);background:rgba(255,200,87,.12);color:var(--gold);font-weight:600;
+    transition:transform .14s ease,background .14s ease,border-color .14s ease;
+  }
+  .gift .claim.pressing{transform:scale(.95);background:rgba(255,200,87,.26)}
+  .gift .claim.used{background:rgba(46,196,182,.16);border-color:rgba(46,196,182,.5);color:var(--teal)}
+  .gift .claim.used.pressing{background:rgba(46,196,182,.3)}
+  .gift-note{margin-top:18px;font-size:13.5px;color:var(--muted)}
+
+  /* ---------- memories ---------- */
+  .stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:26px}
+  .stat-grid > .stat:last-child{grid-column:1/-1}
+  @media (min-width:640px){
+    .stat-grid{grid-template-columns:repeat(3,1fr)}
+    .stat-grid > .stat:last-child{grid-column:auto}
+  }
+  .stat{
+    border:1px solid rgba(255,255,255,.12);border-radius:var(--r);
+    background:rgba(255,255,255,.035);padding:14px 16px;text-align:center;
+  }
+  .stat .cap{font-size:12.5px;letter-spacing:.1em;color:var(--muted)}
+  .stat .num{margin-top:6px;font-family:"Songti SC","Noto Serif SC",Georgia,serif;font-size:clamp(26px,5vw,34px);color:var(--gold);line-height:1.1}
+  .stat .num span{font-size:14px;color:var(--cream);margin-left:4px}
+  .stats-note{margin-top:12px;font-size:12.5px;color:var(--muted)}
+  .verse{
+    margin:30px 0 0;text-align:center;font-family:"Songti SC","Noto Serif SC",Georgia,serif;
+    font-size:clamp(16px,3vw,20px);color:var(--cream);letter-spacing:.06em;
+  }
+  .verse span{display:block;margin-top:8px;font-size:12.5px;color:var(--muted);letter-spacing:.1em}
+  .mem-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:clamp(14px,2.6vw,20px);margin-top:22px}
+  @media (min-width:820px){ .mem-grid{grid-template-columns:repeat(2,1fr)} }
+  .mem{
+    position:relative;border-radius:var(--r);overflow:hidden;border:1px solid rgba(255,255,255,.12);
+    background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.015));
+  }
+  .mem::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--accent,var(--gold))}
+  .mem .frame{
+    aspect-ratio:4/3;background:linear-gradient(135deg,rgba(90,169,230,.18),rgba(255,107,107,.14));
+    display:grid;place-items:center;color:var(--muted);font-size:13.5px;text-align:center;padding:14px;
+  }
+  .mem .frame img{width:100%;height:100%;object-fit:cover}
+  .mem .body{padding:18px}
+  .mem .head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+  .mem .idx{
+    font-family:Georgia,"Times New Roman",serif;font-size:12px;letter-spacing:.1em;
+    color:var(--accent,var(--gold));border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:1px 9px;
+  }
+  .mem .k{font-size:12px;letter-spacing:.14em;color:var(--muted);text-align:right}
+  .mem h3{font-size:18px;margin:0 0 8px}
+  .mem p{font-size:14.5px;color:var(--muted);margin:0}
+
+  /* ---------- letter ---------- */
+  .letter{
+    position:relative;overflow:hidden;
+    margin-top:24px;background:var(--paper);color:var(--ink-on-paper);
+    border-radius:var(--r);
+    padding:clamp(24px,4.5vw,42px) clamp(22px,4.5vw,42px) clamp(118px,22vw,190px);
+    box-shadow:var(--shadow);
+    background-image:
+      radial-gradient(120% 70% at 50% 0%,rgba(255,255,255,.72),rgba(255,255,255,0) 62%),
+      linear-gradient(180deg,rgba(120,90,60,.045),rgba(120,90,60,0) 42%);
+  }
+  .letter > :not(svg){position:relative;z-index:1}
+  .letter > svg{position:absolute;z-index:0;pointer-events:none}
+  .ink-hills{left:0;right:0;bottom:0;width:100%;height:clamp(96px,20vw,172px)}
+  .ink-birds{top:clamp(10px,3%,34px);right:clamp(12px,4%,40px);width:clamp(78px,15%,134px)}
+  .ink-seal{width:clamp(32px,6.5vw,42px);height:auto;transform:rotate(-4deg)}
+  .letter .to{font-family:"Songti SC","Noto Serif SC",Georgia,serif;font-size:clamp(22px,4.6vw,30px);margin-bottom:16px}
+  .letter p{
+    font-family:"Kaiti SC","STKaiti","KaiTi","Songti SC","Noto Serif SC",Georgia,serif;
+    font-size:clamp(16px,2.7vw,17.5px);line-height:2.05;
+  }
+  .letter .sign{text-align:right;font-family:"Songti SC","Noto Serif SC",Georgia,serif;font-size:19px;color:#5a4a63}
+  .sign-wrap{display:flex;align-items:flex-end;justify-content:flex-end;gap:12px;margin-top:22px}
+  .letter-date{text-align:right;margin-top:22px;font-family:"Songti SC","Noto Serif SC",Georgia,serif;font-size:14px;color:#8a7a92;letter-spacing:.08em}
+  .caret{display:inline-block;width:2px;height:1.05em;background:var(--coral);vertical-align:-.16em;animation:blink 1s steps(2) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .letter-actions{margin-top:20px}
+
+  /* ---------- finale ---------- */
+  #finale{min-height:100vh;display:grid;align-content:center}
+  .finale-inner{text-align:center}
+  .finale-inner .big{
+    font-family:"Songti SC","Noto Serif SC",Georgia,serif;
+    font-size:clamp(32px,8vw,68px);line-height:1.15;
+  }
+  .finale-inner .big em{font-style:normal;color:var(--gold);white-space:nowrap}
+  .finale-inner .sub{margin:18px auto 0;color:var(--muted);max-width:52ch}
+  .blessing{
+    margin:34px auto 0;max-width:44ch;
+    font-family:"Songti SC","Noto Serif SC",Georgia,serif;
+    font-size:clamp(15px,2.8vw,17.5px);line-height:2.05;color:var(--cream);
+  }
+  .blessing::before{content:"";display:block;width:46px;height:1px;background:rgba(255,255,255,.22);margin:0 auto 24px}
+  .blessing p{margin:0}
+  .blessing p + p{margin-top:14px}
+  .finale-actions{margin-top:28px;justify-content:center}
+  .credits{margin-top:44px;padding-top:22px;border-top:1px solid rgba(255,255,255,.12);color:var(--muted);font-size:13.5px}
+  .credits b{color:var(--cream);font-weight:600;white-space:nowrap}
+
+  /* ---------- toast ---------- */
+  #toast{
+    position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);
+    background:var(--cream);color:#20182a;padding:12px 18px;border-radius:var(--r);
+    font-size:14.5px;font-weight:600;box-shadow:var(--shadow);
+    opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease;z-index:80;
+    max-width:calc(100vw - 40px);text-align:center;
+  }
+  #toast.on{opacity:1;transform:translate(-50%,0)}
+
+  .reveal{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}
+  .reveal.in{opacity:1;transform:none}
+  section{scroll-margin-top:20px}
+
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto}
+    *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+    .reveal{opacity:1;transform:none}
+  }
+</style>
+</head>
+<body>
+
+<canvas id="fx" aria-hidden="true"></canvas>
+<canvas id="sparks" aria-hidden="true"></canvas>
+
+<!-- ============================================================
+     进门：刮开涂层
+     ============================================================ -->
+<div id="scratch">
+  <div class="scratch-box">
+    <p class="eyebrow" style="justify-content:center">就给你一个人看</p>
+    <div class="scratch-frame">
+      <div class="scratch-under">
+        <div class="big" id="scratchBig">有一份小礼物，<br />是给你的</div>
+        <div class="sub">手指按住灰色区域，来回抹几下</div>
+      </div>
+      <canvas id="scratchCanvas" aria-label="刮开涂层"></canvas>
+    </div>
+    <p class="scratch-hint" id="scratchHint">刮到一半以上，门就开了</p>
+    <div class="row" id="scratchEnter" style="justify-content:center;margin-top:16px;display:none">
+      <button class="btn gold" id="enterBtn">推门进去 ✦</button>
+    </div>
+  </div>
+</div>
+
+<nav class="dots" id="dots" aria-label="页面导航"></nav>
+
+<main>
+  <!-- ============================================================
+       第一节：主角登场
+       ============================================================ -->
+  <section class="stage" id="hero">
+    <div class="hero-grid">
+      <div class="reveal">
+        <p class="eyebrow" id="dateLine">生日快乐</p>
+        <h1 class="hero-name">生日快乐，<em id="nameLine">小寿星</em></h1>
+        <p class="lead" style="margin-top:16px" id="heroLead">今天没什么要赶的，慢慢往下看。</p>
+        <div class="countdown" id="countdown" hidden></div>
+        <div class="scroll-cue"><span class="dot"></span><span>往下走，后面还有几件事</span></div>
+      </div>
+      <div class="agecard reveal">
+        <div class="cap">官方认证</div>
+        <div class="age" id="ageNum">--</div>
+        <div class="cap">岁的重磅人物</div>
+        <div class="rule"></div>
+        <div class="kicker" id="ageKicker">本日全场最佳，不接受反驳</div>
+      </div>
+    </div>
+
+    <div class="mission reveal">
+      <h3 style="margin-bottom:14px">今天的三条规则</h3>
+      <ol>
+        <li><span class="no">1</span><span>今天你说什么都是对的，包括"我还可以再吃一块"。</span></li>
+        <li><span class="no">2</span><span>今天你负责被照顾，其他事都排到明天。</span></li>
+        <li><span class="no">3</span><span>今天不许说"我就随便"，想要什么直接讲。</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       第二节：吹蜡烛
+       ============================================================ -->
+  <section class="stage" id="cake">
+    <div class="head reveal">
+      <p class="eyebrow">环节一 · 许愿</p>
+      <h2>先许个愿，然后吹蜡烛</h2>
+      <p class="lead">可以真对着手机吹一口气，也可以直接点灭。许的愿不用说给我听。</p>
+    </div>
+
+    <div class="cake-scene">
+      <div class="cake-art reveal">
+        <div class="candle-row" id="candles" role="group" aria-label="生日蜡烛"></div>
+        <div class="cake-body" aria-hidden="true">
+          <div class="cake-top"></div>
+          <div class="drip"></div>
+          <div class="layer-1"></div>
+          <div class="icing"></div>
+          <div class="layer-2"></div>
+          <div class="plate"></div>
+        </div>
+      </div>
+
+      <div class="reveal">
+        <div class="card">
+          <h3>吹蜡烛</h3>
+          <p class="muted" style="font-size:14.5px" id="cakeStatus">还有 5 根蜡烛在等你。</p>
+          <div class="row">
+            <button class="btn ghost" id="micBtn">🎤 用真气息吹灭</button>
+            <button class="btn ghost" id="tapBtn">👆 点灭它们</button>
+          </div>
+          <p class="hint" id="micHint">第一次用麦克风时，浏览器会问一次"允许使用麦克风吗"。点允许就行，声音只在这台设备上判断大小。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       第三节：礼券
+       ============================================================ -->
+  <section class="stage" id="gifts">
+    <div class="reveal">
+      <p class="eyebrow">环节二 · 兑奖区</p>
+      <h2>这几张券，随时可以找我兑现</h2>
+      <p class="lead">没期限，也没别的条件。想留哪张点一下，用的时候说一声。</p>
+    </div>
+
+    <div class="gift-grid" id="giftGrid"></div>
+    <p class="gift-note reveal" id="giftNote">已经领走 0 / 0 张。点一下就是记一笔，用的时候说一声。</p>
+  </section>
+
+  <!-- ============================================================
+       第四节：一起经历过的小事
+       ============================================================ -->
+  <section class="stage" id="memories">
+    <div class="reveal">
+      <p class="eyebrow">环节三 · 存档点</p>
+      <h2>一路走来，攒下了不少事</h2>
+      <p class="lead">我们没有合照，就先记点别的。</p>
+    </div>
+    <div class="stat-grid" id="statGrid"></div>
+    <p class="stats-note reveal" id="statsNote"></p>
+    <div class="mem-grid" id="memGrid"></div>
+    <p class="verse reveal">海上生明月，天涯共此时。<span>—— 张九龄《望月怀远》</span></p>
+  </section>
+
+  <!-- ============================================================
+       第五节：信
+       ============================================================ -->
+  <section class="stage" id="letter">
+    <div class="reveal">
+      <p class="eyebrow">环节四 · 认真说话</p>
+      <h2>写了几句话给你</h2>
+    </div>
+    <div class="letter reveal" id="letterPaper">
+      <svg class="ink-hills" viewBox="0 0 800 240" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="inkMist" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#f8f2e6" stop-opacity="0" />
+            <stop offset="1" stop-color="#f8f2e6" stop-opacity=".9" />
+          </linearGradient>
+        </defs>
+        <path d="M0 150 C40 138 62 96 96 92 C124 89 140 118 168 128 C196 138 214 108 244 88 C274 68 296 104 322 124 C348 144 372 132 398 112 C424 92 448 118 474 136 C500 154 528 126 556 108 C584 90 610 118 636 138 C662 158 692 134 720 116 C748 98 776 122 800 132 L800 240 L0 240 Z" fill="#2a2233" opacity=".1" />
+        <rect x="0" y="128" width="800" height="56" fill="url(#inkMist)" />
+        <path d="M0 186 C34 172 56 142 88 140 C118 138 132 166 158 176 C186 187 206 156 236 140 C266 124 288 158 314 174 C340 190 364 174 392 158 C420 142 444 166 470 180 C496 194 524 168 552 154 C580 140 606 166 632 180 C658 194 688 172 716 158 C744 144 774 168 800 176 L800 240 L0 240 Z" fill="#2a2233" opacity=".15" />
+        <rect x="0" y="170" width="800" height="44" fill="url(#inkMist)" />
+        <path d="M0 216 C46 206 78 190 128 194 C178 198 214 216 262 212 C310 208 344 190 396 194 C448 198 482 218 534 216 C586 214 618 194 668 196 C718 198 758 214 800 212 L800 240 L0 240 Z" fill="#2a2233" opacity=".2" />
+        <g fill="none" stroke="#2a2233" stroke-linecap="round" opacity=".16">
+          <path d="M78 228 q30 -6 60 0" stroke-width="2" />
+          <path d="M236 236 q26 -5 52 0" stroke-width="1.5" />
+          <path d="M486 230 q32 -6 64 0" stroke-width="2" />
+          <path d="M662 238 q24 -5 48 0" stroke-width="1.4" />
+        </g>
+      </svg>
+      <svg class="ink-birds" viewBox="0 0 140 70" aria-hidden="true">
+        <g fill="none" stroke="#2a2233" stroke-linecap="round">
+          <path d="M8 34 q10 -13 20 0 q10 -13 20 0" stroke-width="2.6" opacity=".55" />
+          <path d="M62 19 q7 -9 15 0 q8 -9 15 0" stroke-width="2" opacity=".45" />
+          <path d="M98 45 q6 -8 12 0 q6 -8 12 0" stroke-width="1.8" opacity=".38" />
+        </g>
+      </svg>
+      <div class="to" id="letterTo">写给 小寿星：</div>
+      <div id="letterBody"></div>
+      <div class="letter-date" id="letterDate">丙午年秋</div>
+      <div class="sign-wrap">
+        <div class="sign" id="letterSign">—— 朋友</div>
+        <svg class="ink-seal" viewBox="0 0 44 44" aria-hidden="true">
+          <rect x="2.5" y="2.5" width="39" height="39" rx="4" fill="#b23a2e" />
+          <text x="22" y="30.5" text-anchor="middle" font-family="Georgia,serif" font-size="21" fill="#f8f2e6">友</text>
+        </svg>
+      </div>
+      <div class="letter-actions row">
+        <button class="btn" id="typeBtn">重新慢慢读一遍</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       终章
+       ============================================================ -->
+  <section class="stage" id="finale">
+    <div class="finale-inner">
+      <p class="eyebrow" style="justify-content:center">片尾</p>
+      <div class="big">今天的主角，永远是 <em id="finaleName">小寿星</em></div>
+      <p class="sub">今年也辛苦了。少熬点夜，多吃点饭，有事说一声。</p>
+      <div class="blessing reveal">
+        <p>要永远年轻，永远热情，永远不听话，要大笑，要做梦，要与众不同。</p>
+        <p>愿所有的欢乐都陪伴你，仰首是春，俯首是秋，愿所有的幸福都追随你，月圆是画，月缺是诗。</p>
+      </div>
+      <div class="row finale-actions">
+        <button class="btn gold" id="wishBtn">再放一次烟花</button>
+        <button class="btn ghost" id="shareBtn">把这一页分享出去</button>
+      </div>
+      <div class="credits">
+        制作人：<b id="creditFrom">朋友</b> · 主演：<b id="creditTo">小寿星</b> · 出品日期：<b id="creditDate"></b>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>window.__INLINE_PHOTOS = {};</script>
+<script>
+/* ==================================================================
+   ① 需要改的内容都在这里
+   ================================================================== */
+const CONFIG = {
+  fullName: "",                    // 公开示例版不包含姓名
+  name: "小寿星",                  // 页面上的通用称呼
+  from: "朋友",                    // 页面上的通用署名
+  birthYear: 2000,                 // 公开示例数据
+  birthday: "2026-12-31",          // 公开示例日期
+  notBirthdayLead: "这是一个生日祝福页示例，所有姓名与日期均为占位内容。",
+  heroLead: "今天没什么要赶的，慢慢往下看。",
+  ageKicker: "本日全场最佳，不接受反驳",
+
+  gifts: [
+    { tag: "随时兑现", title: "一张宵夜投喂券", desc: "你饿了就说一声，我给你点份宵夜。" },
+    { tag: "长期有效", title: "无理由陪聊", desc: "不用有事才能找我。发个「在吗」就行，半夜也算。" },
+    { tag: "长期有效", title: "随时能打的视频电话", desc: "想说话直接打过来，不用先问方不方便。" },
+    { tag: "随时兑现", title: "一次短途出走", desc: "挑个周末，去附近的城市转一圈。路线我来排。" },
+    { tag: "长期有效", title: "一个一直在场的人", desc: "这条不限次数。好事坏事都可以说，什么时候都行。" }
+  ],
+
+  // 公开示例数据
+  friendStats: {
+    metDate: "2020-01-01",
+    meals: 0,
+    roasts: 999
+  },
+  statsNote: "页面数据均为示例。",
+
+  // 公开示例内容
+  memories: [
+    { when: "故事开始的时候", title: "认识你的那天", text: "有些相遇很普通，回头看才知道，从那以后多了很多值得记住的事。", img: "" },
+    { when: "各自忙碌的日子", title: "见面要提前约", text: "以前常在一起，现在各有各的生活。平时就靠消息和视频。", img: "" },
+    { when: "很多个晚上", title: "聊到很晚的那些次", text: "每次都说只聊两句，一聊就到半夜。第二天困得不行，下次还是照聊。", img: "" },
+    { when: "一直没办成的事", title: "等有空再做的那件事", text: "有些计划一直放在清单里。等哪天都有空，就把这件事办掉。", img: "" }
+  ],
+
+  letter: [
+    "又是一年生日，想把几句简单但认真的祝福写给你。",
+    "愿你新的一岁，想做的事都能慢慢做成。",
+    "忙的时候有收获，闲下来的时候也有好心情。",
+    "希望你被认真对待，也总能遇到值得期待的事。",
+    "愿这一天过得轻松一点，开心不用讲道理。",
+    "往后的日子，平安、顺遂、自由。",
+    "祝{age}岁生日快乐！",
+    "朱颜长似，头上花枝，岁岁年年。"
+  ],
+
+  countdownLabel: "距离下一个生日还有"
+};
+
+const CELEBRATED_AGE = new Date(CONFIG.birthday + "T00:00:00").getFullYear() - CONFIG.birthYear;
+/* ================================================================== */
+
+const $ = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- toast ---------- */
+let toastTimer;
+function toast(msg) {
+  const el = $("#toast");
+  el.textContent = msg;
+  el.classList.add("on");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("on"), 2200);
+}
+
+/* ---------- 背景：星点 + 彩带 ---------- */
+(function background() {
+  const canvas = $("#fx");
+  const ctx = canvas.getContext("2d");
+  let W = 0, H = 0, dpr = 1, stars = [], confetti = [];
+  const palette = ["#ff6b6b", "#ffc857", "#2ec4b6", "#5aa9e6", "#f6ecd9"];
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = canvas.clientWidth; H = canvas.clientHeight;
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const count = Math.round((W * H) / 26000);
+    stars = Array.from({ length: Math.max(40, Math.min(150, count)) }, () => ({
+      x: Math.random() * W, y: Math.random() * H,
+      r: Math.random() * 1.3 + .35, a: Math.random() * .55 + .18,
+      v: Math.random() * .016 + .004
+    }));
+  }
+  window.addEventListener("resize", resize);
+  resize();
+
+  function burst(amount, origin) {
+    const o = origin || { x: W / 2, y: H * .38 };
+    const n = reduced ? Math.round(amount * .3) : amount;
+    for (let i = 0; i < n; i++) {
+      const ang = Math.random() * Math.PI * 2, sp = Math.random() * 8 + 2.5;
+      confetti.push({
+        x: o.x, y: o.y,
+        vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp - 3,
+        w: Math.random() * 7 + 4, h: Math.random() * 5 + 3,
+        rot: Math.random() * Math.PI, vr: (Math.random() - .5) * .28,
+        c: palette[Math.floor(Math.random() * palette.length)],
+        life: 1
+      });
+    }
+  }
+
+  function addRibbon(count) {
+    for (let i = 0; i < count; i++) {
+      confetti.push({
+        x: Math.random() * W, y: -20 - Math.random() * 120,
+        vx: (Math.random() - .5) * .8, vy: Math.random() * 1.4 + .8,
+        w: Math.random() * 7 + 4, h: Math.random() * 5 + 3,
+        rot: Math.random() * Math.PI, vr: (Math.random() - .5) * .16,
+        c: palette[Math.floor(Math.random() * palette.length)],
+        life: 1, ribbon: true
+      });
+    }
+  }
+
+  let t = 0;
+  function frame() {
+    ctx.clearRect(0, 0, W, H);
+    t += .016;
+    for (const s of stars) {
+      s.a += s.v;
+      if (s.a > .82 || s.a < .14) s.v *= -1;
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(246,236,217,${s.a})`; ctx.fill();
+    }
+    for (let i = confetti.length - 1; i >= 0; i--) {
+      const p = confetti[i];
+      p.vy += p.ribbon ? .012 : .19;
+      p.vx *= .992; p.vy *= .994;
+      p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+      if (p.ribbon && p.y > H + 30) {
+        p.y = -20; p.x = Math.random() * W;
+      }
+      if (!p.ribbon) {
+        p.life -= .006;
+        if (p.life <= 0 || p.y > H + 40) { confetti.splice(i, 1); continue; }
+      }
+      ctx.save();
+      ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+      ctx.globalAlpha = Math.max(.15, p.life);
+      ctx.fillStyle = p.c;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    }
+    requestAnimationFrame(frame);
+  }
+  frame();
+
+  window.__fx = { burst, addRibbon: () => addRibbon(reduced ? 12 : 30) };
+})();
+
+/* ---------- 文案注入 ---------- */
+(function fillText() {
+  const cfg = CONFIG;
+  const birthday = new Date(cfg.birthday + "T00:00:00");
+  const now = new Date();
+  const isToday = now.getMonth() === birthday.getMonth() && now.getDate() === birthday.getDate();
+
+  document.title = `写给${cfg.fullName || cfg.name}的生日页`;
+  $("#scratchBig").innerHTML = `有一份礼物，<br />是给 ${cfg.name} 的`;
+  $("#nameLine").textContent = cfg.name;
+  $("#finaleName").textContent = cfg.name;
+  $("#creditTo").textContent = cfg.name;
+  $("#creditFrom").textContent = cfg.from;
+  $("#letterTo").textContent = `写给 ${cfg.name}：`;
+  $("#letterSign").textContent = `—— ${cfg.from}`;
+  $("#ageKicker").textContent = cfg.ageKicker;
+  $("#heroLead").textContent = isToday ? cfg.heroLead : cfg.notBirthdayLead;
+  $("#dateLine").textContent = isToday ? "今天就是生日" : `${birthday.getMonth() + 1} 月 ${birthday.getDate()} 日 · 生日快乐`;
+  $("#creditDate").textContent = `${now.getFullYear()} 年 ${birthday.getMonth() + 1} 月 ${birthday.getDate()} 日`;
+  const GAN = "甲乙丙丁戊己庚辛壬癸", ZHI = "子丑寅卯辰巳午未申酉戌亥";
+  const season = ["冬", "冬", "春", "春", "春", "夏", "夏", "夏", "秋", "秋", "秋", "冬"][now.getMonth()];
+  $("#letterDate").textContent = `${GAN[(now.getFullYear() - 4) % 10]}${ZHI[(now.getFullYear() - 4) % 12]}年${season}`;
+
+  $("#ageNum").textContent = CELEBRATED_AGE > 0 ? CELEBRATED_AGE : "∞";
+
+  const count = $("#countdown");
+  if (!isToday) {
+    const next = new Date(now.getFullYear(), birthday.getMonth(), birthday.getDate());
+    if (next < new Date(now.getFullYear(), now.getMonth(), now.getDate())) next.setFullYear(next.getFullYear() + 1);
+    const days = Math.round((next - new Date(now.getFullYear(), now.getMonth(), now.getDate())) / 86400000);
+    count.innerHTML = `${cfg.countdownLabel} <b>${days}</b> 天`;
+    count.hidden = false;
+  }
+})();
+
+/* ---------- 指尖烟花：按下、拖动都开花 ---------- */
+(function sparkCanvas() {
+  const canvas = $("#sparks");
+  const ctx = canvas.getContext("2d");
+  const palette = ["#ff6b6b", "#ffc857", "#2ec4b6", "#5aa9e6", "#f6ecd9"];
+  const parts = [];
+  let W = 0, H = 0, raf = 0, holding = false, lastX = 0, lastY = 0;
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  resize();
+  window.addEventListener("resize", resize);
+
+  function frame() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.globalCompositeOperation = "lighter";
+    for (let i = parts.length - 1; i >= 0; i--) {
+      const p = parts[i];
+      p.vy += .06; p.vx *= .984; p.vy *= .984;
+      p.x += p.vx; p.y += p.vy; p.life -= p.decay;
+      if (p.life <= 0 || p.y > H + 60) { parts.splice(i, 1); continue; }
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size * (.35 + p.life), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = "source-over";
+    if (parts.length) raf = requestAnimationFrame(frame);
+    else { raf = 0; ctx.clearRect(0, 0, W, H); }
+  }
+
+  function spawn(x, y, count, power) {
+    if (reduced) count = Math.max(2, Math.round(count * .4));
+    for (let i = 0; i < count; i++) {
+      if (parts.length > 520) parts.shift();
+      const a = Math.random() * Math.PI * 2;
+      const sp = power * (.35 + Math.random() * .85);
+      parts.push({
+        x, y,
+        vx: Math.cos(a) * sp,
+        vy: Math.sin(a) * sp - power * .3,
+        life: 1,
+        decay: .014 + Math.random() * .016,
+        size: 1.3 + Math.random() * 2.3,
+        color: palette[(Math.random() * palette.length) | 0]
+      });
+    }
+    if (!raf) raf = requestAnimationFrame(frame);
+  }
+
+  function press(x, y) {
+    holding = true; lastX = x; lastY = y;
+    parts.push({ x, y, vx: 0, vy: 0, life: 1, decay: .1, size: 13, color: "#fff8c9" });
+    spawn(x, y, 16, 3.3);
+  }
+  function drag(x, y) {
+    if (Math.hypot(x - lastX, y - lastY) < 20) return;
+    lastX = x; lastY = y;
+    spawn(x, y, 4, 1.9);
+  }
+  function release() { holding = false; }
+
+  window.addEventListener("pointerdown", e => { if (e.pointerType !== "touch") press(e.clientX, e.clientY); }, { passive: true });
+  window.addEventListener("pointermove", e => { if (e.pointerType !== "touch" && holding) drag(e.clientX, e.clientY); }, { passive: true });
+  window.addEventListener("pointerup", release, { passive: true });
+  window.addEventListener("pointercancel", release, { passive: true });
+  // 触屏用 touch 事件，手指按着滑动（哪怕页面在滚）也会一路开花
+  window.addEventListener("touchstart", e => { const t = e.touches[0]; if (t) press(t.clientX, t.clientY); }, { passive: true });
+  window.addEventListener("touchmove", e => { const t = e.touches[0]; if (t && holding) drag(t.clientX, t.clientY); }, { passive: true });
+  window.addEventListener("touchend", release, { passive: true });
+  window.addEventListener("touchcancel", release, { passive: true });
+})();
+
+/* ---------- 按压反馈：按住有手感，手指滑出按钮就取消 ---------- */
+(function pressFeedback() {
+  const selector = ".btn, .claim, .candle, .dots button";
+  let pressed = null;
+  const inBox = (el, x, y) => {
+    const r = el.getBoundingClientRect();
+    return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+  };
+  function clear() {
+    if (pressed) { pressed.classList.remove("pressing"); pressed = null; }
+  }
+  document.addEventListener("pointerdown", e => {
+    const el = e.target.closest(selector);
+    if (!el) return;
+    clear();
+    pressed = el;
+    el.classList.add("pressing");
+  }, true);
+  document.addEventListener("pointermove", e => {
+    if (!pressed) return;
+    pressed.classList.toggle("pressing", inBox(pressed, e.clientX, e.clientY));
+  }, { passive: true, capture: true });
+  document.addEventListener("pointerup", clear, true);
+  document.addEventListener("pointercancel", clear, true);
+})();
+
+/* ---------- 刮刮卡 ---------- */
+(function scratchCard() {
+  const canvas = $("#scratchCanvas");
+  const ctx = canvas.getContext("2d");
+  const wrap = canvas.parentElement;
+  let W = 0, H = 0, dpr = 1, drawing = false, revealed = 0, total = 1, done = false;
+  let last = null;
+
+  function coat() {
+    const g = ctx.createLinearGradient(0, 0, W, H);
+    g.addColorStop(0, "#3a3f5c");
+    g.addColorStop(.5, "#2a2e46");
+    g.addColorStop(1, "#434a6b");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "rgba(255,255,255,.07)";
+    for (let i = 0; i < 220; i++) {
+      ctx.fillRect(Math.random() * W, Math.random() * H, 2, 2);
+    }
+    ctx.fillStyle = "rgba(246,236,217,.5)";
+    ctx.font = "600 14px system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("刮开这里", W / 2, H / 2 + 5);
+    ctx.font = "400 12.5px system-ui, sans-serif";
+    ctx.fillStyle = "rgba(246,236,217,.36)";
+    ctx.fillText("按住来回涂抹", W / 2, H / 2 + 28);
+  }
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = wrap.clientWidth; H = wrap.clientHeight;
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    total = W * H;
+    if (!done) { revealed = 0; coat(); }
+  }
+  window.addEventListener("resize", () => { if (!done) resize(); });
+  resize();
+
+  function pos(e) {
+    const r = canvas.getBoundingClientRect();
+    const p = e.touches ? e.touches[0] : e;
+    return { x: p.clientX - r.left, y: p.clientY - r.top };
+  }
+
+  function erase(a, b) {
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.lineWidth = Math.max(26, W * .09);
+    ctx.lineCap = "round"; ctx.lineJoin = "round";
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    ctx.beginPath(); ctx.arc(b.x, b.y, ctx.lineWidth / 2, 0, Math.PI * 2); ctx.fill();
+    ctx.globalCompositeOperation = "source-over";
+    revealed += Math.hypot(b.x - a.x, b.y - a.y) * ctx.lineWidth * 1.5;
+    if (revealed / total > .42 && !done) finish();
+  }
+
+  function finish() {
+    done = true;
+    canvas.style.transition = "opacity .5s ease";
+    canvas.style.opacity = "0";
+    $("#scratchEnter").style.display = "flex";
+    $("#scratchHint").textContent = "门开了，进去吧。";
+    window.__fx.burst(90, { x: window.innerWidth / 2, y: window.innerHeight * .42 });
+  }
+
+  canvas.addEventListener("pointerdown", e => { drawing = true; last = pos(e); canvas.setPointerCapture(e.pointerId); erase(last, last); });
+  canvas.addEventListener("pointermove", e => { if (!drawing) return; const p = pos(e); erase(last, p); last = p; });
+  ["pointerup", "pointercancel", "pointerleave"].forEach(ev =>
+    canvas.addEventListener(ev, () => { drawing = false; last = null; }));
+
+  // 键盘 / 无指针设备也能过
+  canvas.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") finish(); });
+  canvas.tabIndex = 0;
+
+  $("#enterBtn").addEventListener("click", () => {
+    $("#scratch").classList.add("leaving");
+    setTimeout(() => {
+      $("#scratch").style.display = "none";
+      document.body.style.overflow = "";
+      window.__fx.burst(150, { x: window.innerWidth / 2, y: window.innerHeight * .3 });
+    }, 850);
+  });
+  document.body.style.overflow = "hidden";
+  setTimeout(() => { if (!done) $("#scratchHint").textContent = "刮到一半以上，或者按回车直接进门"; }, 6000);
+})();
+
+/* ---------- 蜡烛 ---------- */
+(function candles() {
+  const row = $("#candles");
+  const COUNT = 5;
+  for (let i = 0; i < COUNT; i++) {
+    const c = document.createElement("div");
+    c.className = "candle";
+    c.tabIndex = 0;
+    c.setAttribute("role", "button");
+    c.setAttribute("aria-label", `吹灭第 ${i + 1} 根蜡烛`);
+    c.innerHTML = '<span class="wick"></span><span class="flame"></span><span class="smoke"></span>';
+    const blow = () => extinguish(c);
+    c.addEventListener("click", blow);
+    c.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); blow(); } });
+    row.appendChild(c);
+  }
+
+  let allDone = false;
+  function extinguish(el) {
+    if (el.classList.contains("blown")) return;
+    el.classList.add("blown");
+    const left = $$(".candle:not(.blown)").length;
+    $("#cakeStatus").textContent = left
+      ? `还有 ${left} 根蜡烛在等你。`
+      : "全灭了。愿望记下了，从今天算起。";
+    if (!left) celebrate();
+  }
+
+  function celebrate() {
+    if (allDone) return;
+    allDone = true;
+    const r = row.getBoundingClientRect();
+    const o = { x: r.left + r.width / 2, y: r.top };
+    window.__fx.burst(320, o);
+    setTimeout(() => window.__fx.burst(180, { x: o.x, y: o.y - 40 }), 260);
+    toast("愿望记下了。");
+  }
+
+  $("#tapBtn").addEventListener("click", () => {
+    const left = $$(".candle:not(.blown)");
+    left.forEach((c, i) => setTimeout(() => extinguish(c), i * 160));
+  });
+
+  /* 麦克风：真的吹气 */
+  $("#micBtn").addEventListener("click", async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false } });
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      const actx = new AudioCtx();
+      const src = actx.createMediaStreamSource(stream);
+      const analyser = actx.createAnalyser();
+      analyser.fftSize = 1024;
+      src.connect(analyser);
+      const data = new Uint8Array(analyser.frequencyBinCount);
+      $("#micHint").textContent = "麦克风开了，吹一下试试。";
+      $("#micBtn").textContent = "🌬️ 正在听……猛吹一口";
+      let hot = 0, raf;
+      const listen = () => {
+        analyser.getByteFrequencyData(data);
+        let sum = 0;
+        for (let i = 0; i < 140; i++) sum += data[i];
+        const level = sum / 140;
+        if (level > 58) {
+          hot++;
+          if (hot % 2 === 0) {
+            const left = $$(".candle:not(.blown)");
+            if (left.length) extinguish(left[left.length - 1]);
+          }
+        } else hot = 0;
+        if ($$(".candle:not(.blown)").length) raf = requestAnimationFrame(listen);
+        else {
+          cancelAnimationFrame(raf);
+          stream.getTracks().forEach(t => t.stop());
+          actx.close();
+          $("#micBtn").textContent = "🎤 再来一次";
+          $("#micHint").textContent = "吹灭了，麦克风关掉了。";
+        }
+      };
+      listen();
+      setTimeout(() => {
+        if ($$(".candle:not(.blown)").length && actx.state !== "closed") {
+          $("#micHint").textContent = "没听到风声？直接点蜡烛也一样。";
+        }
+      }, 20000);
+    } catch (err) {
+      $("#micHint").textContent = "麦克风没打开，点「点灭它们」也一样。";
+    }
+  });
+})();
+
+/* ---------- 礼券 ---------- */
+(function gifts() {
+  const grid = $("#giftGrid");
+  const taken = new Set();
+  CONFIG.gifts.forEach((g, i) => {
+    const card = document.createElement("article");
+    card.className = "gift reveal";
+    card.innerHTML = `
+      <span class="tag">${g.tag}</span>
+      <h3>${g.title}</h3>
+      <p>${g.desc}</p>
+      <button class="claim" type="button">先领走</button>`;
+    const btn = $(".claim", card);
+    btn.addEventListener("click", () => {
+      if (taken.has(i)) { taken.delete(i); btn.classList.remove("used"); btn.textContent = "先领走"; }
+      else { taken.add(i); btn.classList.add("used"); btn.textContent = "已领走 ✓"; window.__fx.burst(30, { x: window.innerWidth / 2, y: window.innerHeight * .5 }); }
+      $("#giftNote").textContent = `已经领走 ${taken.size} / ${CONFIG.gifts.length} 张。点一下就是记一笔，用的时候说一声。`;
+      if (taken.size === CONFIG.gifts.length) {
+        toast("全领走也行，用得上就好。");
+        window.__fx.burst(240, { x: window.innerWidth / 2, y: window.innerHeight * .45 });
+      }
+    });
+    grid.appendChild(card);
+  });
+  $("#giftNote").textContent = `已经领走 0 / ${CONFIG.gifts.length} 张。点一下就是记一笔，用的时候说一声。`;
+})();
+
+/* ---------- 存档点：四格数据 ---------- */
+(function stats() {
+  const wrap = $("#statGrid");
+  const st = CONFIG.friendStats || {};
+  const items = [];
+  const met = st.metDate ? new Date(st.metDate + "T00:00:00") : null;
+  if (met && !Number.isNaN(met.getTime())) {
+    const days = Math.max(1, Math.floor((Date.now() - met.getTime()) / 86400000));
+    items.push(["认识", days, "天"]);
+  }
+  if (st.meals != null) items.push(["一起出去吃的饭", st.meals, "顿"]);
+  if (st.roasts != null) items.push(["互相吐槽", st.roasts, "次"]);
+  items.forEach(([cap, num, unit]) => {
+    const el = document.createElement("div");
+    el.className = "stat reveal";
+    el.innerHTML = `<div class="cap">${cap}</div><div class="num">${num}<span>${unit}</span></div>`;
+    wrap.appendChild(el);
+  });
+  $("#statsNote").textContent = CONFIG.statsNote || "";
+})();
+
+(function memories() {
+  const grid = $("#memGrid");
+  const accents = ["var(--coral)", "var(--gold)", "var(--teal)", "var(--sky)"];
+  CONFIG.memories.forEach((m, i) => {
+    const el = document.createElement("article");
+    el.className = "mem reveal";
+    el.style.setProperty("--accent", accents[i % accents.length]);
+    const src = (window.__INLINE_PHOTOS && window.__INLINE_PHOTOS[m.img]) || m.img;
+    const pic = src
+      ? `<div class="frame"><img src="${src}" alt="${m.title}" onerror="this.parentElement.remove()" /></div>`
+      : "";
+    el.innerHTML = `
+      ${pic}
+      <div class="body">
+        <div class="head"><span class="idx">${String(i + 1).padStart(2, "0")}</span><div class="k">${m.when}</div></div>
+        <h3>${m.title}</h3>
+        <p>${m.text}</p>
+      </div>`;
+    grid.appendChild(el);
+  });
+})();
+
+/* ---------- 信：打字机 ---------- */
+(function letter() {
+  const body = $("#letterBody");
+  const btn = $("#typeBtn");
+  let timer = null;
+
+  function render() {
+    clearTimeout(timer);
+    body.innerHTML = "";
+    const lines = CONFIG.letter.map(line => line.replace("{age}", CELEBRATED_AGE));
+    if (reduced) {
+      lines.forEach(line => {
+        const p = document.createElement("p"); p.textContent = line; body.appendChild(p);
+      });
+      return;
+    }
+    let li = 0, ci = 0, p = document.createElement("p");
+    const caret = document.createElement("span"); caret.className = "caret";
+    body.appendChild(p); p.appendChild(caret);
+    btn.disabled = true; btn.textContent = "正在写……";
+
+    const step = () => {
+      if (li >= lines.length) {
+        caret.remove();
+        btn.disabled = false; btn.textContent = "重新慢慢读一遍";
+        return;
+      }
+      const line = lines[li];
+      if (ci < line.length) {
+        caret.insertAdjacentText("beforebegin", line[ci]);
+        ci++;
+        const ch = line[ci - 1];
+        timer = setTimeout(step, /[，。：、]/.test(ch) ? 210 : 34);
+      } else {
+        li++; ci = 0;
+        p = document.createElement("p");
+        body.appendChild(p); p.appendChild(caret);
+        timer = setTimeout(step, 180);
+      }
+    };
+    step();
+  }
+  btn.addEventListener("click", render);
+  window.__startLetter = render;
+})();
+
+/* ---------- 滚动进场 ---------- */
+(function reveals() {
+  const targets = $$(".reveal");
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (en.isIntersecting) {
+        en.target.classList.add("in");
+        io.unobserve(en.target);
+      }
+    });
+  }, { rootMargin: "0px 0px -10% 0px", threshold: .12 });
+  targets.forEach(t => io.observe(t));
+})();
+
+/* ---------- 导航点 ---------- */
+(function dots() {
+  const sections = ["hero", "cake", "gifts", "memories", "letter", "finale"];
+  const nav = $("#dots");
+  sections.forEach(id => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.title = $('#' + id).querySelector("h1,h2,.big")?.textContent?.trim() || id;
+    b.setAttribute("aria-label", b.title);
+    b.addEventListener("click", () => $('#' + id).scrollIntoView({ behavior: "smooth" }));
+    nav.appendChild(b);
+  });
+  const buttons = $$("button", nav);
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      const i = sections.indexOf(en.target.id);
+      if (i < 0) return;
+      if (en.isIntersecting) {
+        buttons.forEach(b => b.classList.remove("active"));
+        buttons[i].classList.add("active");
+      }
+    });
+  }, { threshold: .4 });
+  sections.forEach(id => io.observe($('#' + id)));
+})();
+
+/* ---------- 终章动作 ---------- */
+(function finale() {
+  $("#wishBtn").addEventListener("click", () => {
+    window.__fx.burst(360, { x: window.innerWidth / 2, y: window.innerHeight * .35 });
+    toast(`生日快乐，${CONFIG.name}。`);
+  });
+
+  $("#shareBtn").addEventListener("click", async () => {
+    const data = { title: `生日快乐，${CONFIG.name}`, text: "有一页只写给你的生日礼物", url: location.href };
+    try {
+      if (navigator.share) { await navigator.share(data); return; }
+      await navigator.clipboard.writeText(location.href);
+      toast("链接复制好了。");
+    } catch {
+      toast("长按地址栏复制链接就行。");
+    }
+  });
+
+  // 进入信那一节时开始打字
+  const letter = $("#letter");
+  let started = false;
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (en.isIntersecting && !started) {
+        started = true;
+        window.__startLetter();
+        window.__fx.addRibbon();
+        io.disconnect();
+      }
+    });
+  }, { threshold: .25 });
+  io.observe(letter);
+})();
+</script>
+</body>
+</html>
